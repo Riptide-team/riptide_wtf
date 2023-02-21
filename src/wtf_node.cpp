@@ -51,7 +51,7 @@ namespace riptide_wtf {
         mvwprintw(windows_robot_, 1, 1, "RIPTIDE");
         mvwprintw(windows_safety_, 1, 1, "DAEMON");
         mvwprintw(windows_safety_, 1, 1, "SAFETY");
-        mvwprintw(windows_pressure_, 1, 1, "INTERNAL PRESSURE");
+        mvwprintw(windows_pressure_, 1, 1, "PRESSURE");
         mvwprintw(windows_power_, 1, 1, "POWER");
         mvwprintw(windows_depth_control_, 1, 1, "DEPTH CONTROL");
         mvwprintw(windows_depth_, 1, 1, "DEPTH");
@@ -147,16 +147,16 @@ namespace riptide_wtf {
             mvwprintw(windows_pressure_, 1, 30, "%f", (this->now() - time_last_pressure_).seconds());
 
             mvwprintw(windows_pressure_, 3, 1, "pressure");
-            mvwprintw(windows_pressure_, 3, 30, "%s", to_string(msg_pressure_.pressure).c_str());
+            mvwprintw(windows_pressure_, 3, 30, "%.2f mbar", msg_pressure_.pressure);
 
-            mvwprintw(windows_pressure_, 5, 1, "temperature");
-            mvwprintw(windows_pressure_, 5, 30, "%s", to_string(msg_pressure_.temperature).c_str());
+            mvwprintw(windows_pressure_, 4, 1, "temperature");
+            mvwprintw(windows_pressure_, 4, 30, "%.2f °C", msg_pressure_.temperature);
 
-            mvwprintw(windows_pressure_, 7, 1, "depth");
-            mvwprintw(windows_pressure_, 7, 30,"%s", to_string(msg_pressure_.pressure).c_str());
+            mvwprintw(windows_pressure_, 5, 1, "depth");
+            mvwprintw(windows_pressure_, 5, 30,"%.2f m", msg_pressure_.depth);
 
-            mvwprintw(windows_pressure_, 9, 1, "altitude");
-            mvwprintw(windows_pressure_, 9, 30, "%s", to_string(msg_pressure_.altitude).c_str());
+            mvwprintw(windows_pressure_, 6, 1, "altitude");
+            mvwprintw(windows_pressure_, 6, 30, "%.2f m", msg_pressure_.altitude);
 
             wrefresh(windows_pressure_);
         }
