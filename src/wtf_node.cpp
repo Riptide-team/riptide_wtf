@@ -123,8 +123,8 @@ namespace riptide_wtf {
         // subscriber_safety_ = this->create_subscription<seabot2_safety::msg::SafetyStatus>(
         //         "/safety/safety", 10, std::bind(&WtfNode::safety_callback, this, _1));
 
-        // subscriber_depth_data_ = this->create_subscription<seabot2_depth_filter::msg::DepthPose>(
-        //         "/observer/depth", 10, std::bind(&WtfNode::depth_callback, this, _1));
+        subscriber_pressure_ = this->create_subscription<riptide_msgs::msg::Pressure>(
+                "/riptide_1/pressure_broadcaster/pressure_status", 10, std::bind(&WtfNode::pressure_callback, this, _1));
 
         // subscriber_internal_sensor_filter_ = this->create_subscription<pressure_bme280_driver::msg::Bme280Data>(
         //         "/observer/pressure_internal", 10, std::bind(&WtfNode::internal_sensor_callback, this, _1));
