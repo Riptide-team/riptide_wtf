@@ -143,23 +143,23 @@ namespace riptide_wtf {
     }
 
     void WtfNode::update_internal_pressure_windows(){
-        // if(msg_first_received_internal_sensor_filter_) {
-        //     mvwprintw(windows_pressure_, 1, 30, "%f", (this->now() - time_last_internal_sensor_filter_).seconds());
+        if(msg_first_received_pressure_) {
+            mvwprintw(windows_pressure_, 1, 30, "%f", (this->now() - time_last_pressure_).seconds());
 
-        //     mvwprintw(windows_pressure_, 3, 1, "pressure");
-        //     mvwprintw(windows_pressure_, 3, 30, to_string(msg_pressure_.pressure).c_str());
+            mvwprintw(windows_pressure_, 3, 1, "pressure");
+            mvwprintw(windows_pressure_, 3, 30, to_string(msg_pressure_.pressure).c_str());
 
-        //     mvwprintw(windows_pressure_, 5, 1, "temperature");
-        //     mvwprintw(windows_pressure_, 5, 30, to_string(msg_pressure_.temperature).c_str());
+            mvwprintw(windows_pressure_, 5, 1, "temperature");
+            mvwprintw(windows_pressure_, 5, 30, to_string(msg_pressure_.temperature).c_str());
 
-        //     mvwprintw(windows_pressure_, 7, 1, "depth");
-        //     mvwprintw(windows_pressure_, 7, 30, to_string(msg_pressure_.pressure).c_str());
+            mvwprintw(windows_pressure_, 7, 1, "depth");
+            mvwprintw(windows_pressure_, 7, 30, to_string(msg_pressure_.pressure).c_str());
 
-        //     mvwprintw(windows_pressure_, 9, 1, "altitude");
-        //     mvwprintw(windows_pressure_, 9, 30, to_string(msg_pressure_.altitude).c_str());
+            mvwprintw(windows_pressure_, 9, 1, "altitude");
+            mvwprintw(windows_pressure_, 9, 30, to_string(msg_pressure_.altitude).c_str());
 
-        //     wrefresh(windows_pressure_);
-        // }
+            wrefresh(windows_pressure_);
+        }
     }
 
     void WtfNode::update_mission_windows(){
