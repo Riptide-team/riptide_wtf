@@ -1,7 +1,7 @@
 #pragma once
 
 #include "rclcpp/rclcpp.hpp"
-#include <ncurses.h>
+#include <ncursesw/ncurses.h>
 // #include <systemd/sd-bus.h>
 
 #include <riptide_msgs/msg/pressure.hpp>

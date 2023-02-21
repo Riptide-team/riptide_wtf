@@ -2,7 +2,12 @@
 #include "sys/sysinfo.h"
 #include <ctime>
 #include <iomanip>
+#include <iostream>
 #include <unistd.h>
+#include <string>
+#include <locale.h>
+#include <ncursesw/ncurses.h>
+#include <wchar.h>
 
 // #include <systemd/sd-bus.h>
 
@@ -27,9 +32,16 @@ namespace riptide_wtf {
         timer_ = this->create_wall_timer(
                 loop_dt_, std::bind(&WtfNode::timer_callback, this));
 
+        setlocale(LC_ALL, "UTF-8");
         initscr();
+        curs_set(0); //remove cursor
+        start_color();
+        init_pair(1, COLOR_RED, COLOR_BLACK);
+        init_pair(2, COLOR_GREEN, COLOR_BLACK);
+        init_pair(3, COLOR_CYAN, COLOR_BLACK);
+        use_default_colors();
         windows_robot_              = subwin(stdscr, 5, 90, 0, 0);
-        windows_pressure_           = subwin(stdscr, 8, 44, 5, 0);
+        windows_pressure_           = subwin(stdscr, 7, 44, 5, 0);
         // windows_daemon_             = subwin(stdscr, 5, 90, 14, 0);
         // windows_internal_pressure_  = subwin(stdscr, 7, 44, 19, 0);
         // windows_power_              = subwin(stdscr, 13, 44, 26, 0);
@@ -48,15 +60,19 @@ namespace riptide_wtf {
         box(windows_piston_, ACS_VLINE, ACS_HLINE);
         box(windows_mission_, ACS_VLINE, ACS_HLINE);
 
-        mvwprintw(windows_robot_, 1, 1, "RIPTIDE");
-        mvwprintw(windows_safety_, 1, 1, "DAEMON");
-        mvwprintw(windows_safety_, 1, 1, "SAFETY");
-        mvwprintw(windows_pressure_, 1, 1, "PRESSURE");
-        mvwprintw(windows_power_, 1, 1, "POWER");
-        mvwprintw(windows_depth_control_, 1, 1, "DEPTH CONTROL");
-        mvwprintw(windows_depth_, 1, 1, "DEPTH");
-        mvwprintw(windows_piston_, 1, 1, "PISTON");
-        mvwprintw(windows_mission_, 1, 1, "MISSION");
+        mvwprintw(windows_robot_, 1, 2, "RIPTIDE");
+
+        wattron(windows_pressure_, COLOR_PAIR(3));
+        mvwprintw(windows_pressure_, 1, 4, "PRESSURE");
+        wattroff(windows_pressure_, COLOR_PAIR(3));
+
+        // mvwprintw(windows_safety_, 1, 1, "DAEMON");
+        // mvwprintw(windows_power_, 1, 1, "POWER");
+        // mvwprintw(windows_safety_, 1, 1, "SAFETY");
+        // mvwprintw(windows_depth_control_, 1, 1, "DEPTH CONTROL");
+        // mvwprintw(windows_depth_, 1, 1, "DEPTH");
+        // mvwprintw(windows_piston_, 1, 1, "PISTON");
+        // mvwprintw(windows_mission_, 1, 1, "MISSION");
 
         refresh();
     }
@@ -144,19 +160,37 @@ namespace riptide_wtf {
 
     void WtfNode::update_internal_pressure_windows(){
         if(msg_first_received_pressure_) {
-            mvwprintw(windows_pressure_, 1, 30, "%.2f s", (this->now() - time_last_pressure_).seconds());
+            long time = (this->now() - time_last_pressure_).to_chrono<std::chrono::milliseconds>().count();
+            if (time > 50) {
+                wattron(windows_pressure_, COLOR_PAIR(1));
+            } else {
+                wattron(windows_pressure_, COLOR_PAIR(2));
+            }
+            mvwprintw(windows_pressure_, 1, 33 - std::to_string(time).size(), "    %ld", time);
+            mvwprintw(windows_pressure_, 1, 38, "ms");
+            if (time > 50) {
+                wattroff(windows_pressure_, COLOR_PAIR(1));
+                // mvwaddstr(windows_pressure_, 1, 2, "\u2665");
+            } else {
+                wattroff(windows_pressure_, COLOR_PAIR(2));
+                // mvwaddstr(windows_pressure_, 1, 2, "\u2665");
+            }
 
-            mvwprintw(windows_pressure_, 3, 3, "pressure");
-            mvwprintw(windows_pressure_, 3, 30, "%.2f mbar", msg_pressure_.pressure);
+            mvwprintw(windows_pressure_, 2, 4, "pressure");
+            mvwprintw(windows_pressure_, 2, 37 - std::to_string(msg_pressure_.pressure).size(), "    %.2f", msg_pressure_.pressure);
+            mvwprintw(windows_pressure_, 2, 38, "mbar");
 
-            mvwprintw(windows_pressure_, 4, 3, "temperature");
-            mvwprintw(windows_pressure_, 4, 30, "%.2f °C", msg_pressure_.temperature);
+            mvwprintw(windows_pressure_, 3, 4, "temperature");
+            mvwprintw(windows_pressure_, 3, 37 - std::to_string(msg_pressure_.temperature).size(), "    %.2f", msg_pressure_.temperature);
+            mvwprintw(windows_pressure_, 3, 38, "°C");
 
-            mvwprintw(windows_pressure_, 5, 3, "depth");
-            mvwprintw(windows_pressure_, 5, 30,"%.2f m", msg_pressure_.depth);
+            mvwprintw(windows_pressure_, 4, 4, "depth");
+            mvwprintw(windows_pressure_, 4, 37 - std::to_string(msg_pressure_.depth).size(),"    %.2f", msg_pressure_.depth);
+            mvwprintw(windows_pressure_, 4, 38,"m");
 
-            mvwprintw(windows_pressure_, 6, 3, "altitude");
-            mvwprintw(windows_pressure_, 6, 30, "%.2f m", msg_pressure_.altitude);
+            mvwprintw(windows_pressure_, 5, 4, "altitude");
+            mvwprintw(windows_pressure_, 5, 37 - std::to_string(msg_pressure_.altitude).size(), "    %.2f", msg_pressure_.altitude);
+            mvwprintw(windows_pressure_, 5, 38, "m");
 
             wrefresh(windows_pressure_);
         }
@@ -388,7 +422,7 @@ namespace riptide_wtf {
         stringstream ss;
         ss << std::put_time(&tm, "%d-%m-%Y %H-%M-%S");
         mvwprintw(windows_robot_, 1, 40, "%s", ss.str().c_str());
-        mvwprintw(windows_robot_, 2, 2, "%s", hostname_.c_str());
+        mvwprintw(windows_robot_, 2, 4, "%s", hostname_.c_str());
 
         wrefresh(windows_robot_);
     }
