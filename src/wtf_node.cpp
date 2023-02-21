@@ -147,16 +147,16 @@ namespace riptide_wtf {
             mvwprintw(windows_pressure_, 1, 30, "%f", (this->now() - time_last_pressure_).seconds());
 
             mvwprintw(windows_pressure_, 3, 1, "pressure");
-            mvwprintw(windows_pressure_, 3, 30, to_string(msg_pressure_.pressure).c_str());
+            mvwprintw(windows_pressure_, 3, 30, "%f", to_string(msg_pressure_.pressure).c_str());
 
             mvwprintw(windows_pressure_, 5, 1, "temperature");
-            mvwprintw(windows_pressure_, 5, 30, to_string(msg_pressure_.temperature).c_str());
+            mvwprintw(windows_pressure_, 5, 30, "%f", to_string(msg_pressure_.temperature).c_str());
 
             mvwprintw(windows_pressure_, 7, 1, "depth");
-            mvwprintw(windows_pressure_, 7, 30, to_string(msg_pressure_.pressure).c_str());
+            mvwprintw(windows_pressure_, 7, 30,"%f", to_string(msg_pressure_.pressure).c_str());
 
             mvwprintw(windows_pressure_, 9, 1, "altitude");
-            mvwprintw(windows_pressure_, 9, 30, to_string(msg_pressure_.altitude).c_str());
+            mvwprintw(windows_pressure_, 9, 30, "%f", to_string(msg_pressure_.altitude).c_str());
 
             wrefresh(windows_pressure_);
         }
