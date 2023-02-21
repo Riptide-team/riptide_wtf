@@ -12,6 +12,7 @@ find_package(rosidl_default_generators REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(Curses REQUIRED)
+find_package(riptide_msgs REQUIRED)
 
 ### Executable
 add_executable(wtf_node src/wtf_node.cpp)
@@ -20,6 +21,7 @@ ament_target_dependencies(wtf_node
         rclcpp
         rosidl_default_generators
         std_srvs
+        riptide_msgs
         )
 target_link_libraries(wtf_node "${cpp_typesupport_target}" ${CURSES_LIBRARIES})
 

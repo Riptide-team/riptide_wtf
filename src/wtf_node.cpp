@@ -29,19 +29,19 @@ namespace riptide_wtf {
 
         initscr();
         windows_robot_              = subwin(stdscr, 5, 90, 0, 0);
-        windows_daemon_             = subwin(stdscr, 5, 90, 14, 0);
-        windows_safety_             = subwin(stdscr, 14, 44, 5, 0);
-        windows_internal_pressure_  = subwin(stdscr, 7, 44, 19, 0);
-        windows_power_              = subwin(stdscr, 13, 44, 26, 0);
-        windows_depth_control_      = subwin(stdscr, 11, 44, 39, 0);
-        windows_mission_            = subwin(stdscr, 15, 44, 5, 45);
-        windows_depth_              = subwin(stdscr, 8, 44, 20, 45);
-        windows_piston_             = subwin(stdscr, 15, 44, 28, 45);
+        // windows_daemon_             = subwin(stdscr, 5, 90, 14, 0);
+        windows_pressure_           = subwin(stdscr, 14, 44, 5, 0);
+        // windows_internal_pressure_  = subwin(stdscr, 7, 44, 19, 0);
+        // windows_power_              = subwin(stdscr, 13, 44, 26, 0);
+        // windows_depth_control_      = subwin(stdscr, 11, 44, 39, 0);
+        // windows_mission_            = subwin(stdscr, 15, 44, 5, 45);
+        // windows_depth_              = subwin(stdscr, 8, 44, 20, 45);
+        // windows_piston_             = subwin(stdscr, 15, 44, 28, 45);
 
         box(windows_robot_, ACS_VLINE, ACS_HLINE);
         box(windows_daemon_, ACS_VLINE, ACS_HLINE);
         box(windows_safety_, ACS_VLINE, ACS_HLINE);
-        box(windows_internal_pressure_, ACS_VLINE, ACS_HLINE);
+        box(windows_pressure_, ACS_VLINE, ACS_HLINE);
         box(windows_power_, ACS_VLINE, ACS_HLINE);
         box(windows_depth_control_, ACS_VLINE, ACS_HLINE);
         box(windows_depth_, ACS_VLINE, ACS_HLINE);
@@ -51,7 +51,7 @@ namespace riptide_wtf {
         mvwprintw(windows_robot_, 1, 1, "RIPTIDE");
         mvwprintw(windows_safety_, 1, 1, "DAEMON");
         mvwprintw(windows_safety_, 1, 1, "SAFETY");
-        mvwprintw(windows_internal_pressure_, 1, 1, "INTERNAL PRESSURE");
+        mvwprintw(windows_pressure_, 1, 1, "INTERNAL PRESSURE");
         mvwprintw(windows_power_, 1, 1, "POWER");
         mvwprintw(windows_depth_control_, 1, 1, "DEPTH CONTROL");
         mvwprintw(windows_depth_, 1, 1, "DEPTH");
@@ -76,11 +76,11 @@ namespace riptide_wtf {
         loop_dt_ = std::chrono::milliseconds(this->get_parameter_or("dt", loop_dt_.count()));
     }
 
-    // void WtfNode::depth_callback(const seabot2_depth_filter::msg::DepthPose &msg){
-    //     msg_depth_data_ = msg;
-    //     time_last_depth_data_ = this->now();
-    //     msg_first_received_depth_data_ = true;
-    // }
+    void WtfNode::pressure_callback(const riptide_msgs::msg::Pressure &msg){
+        msg_pressure_ = msg;
+        time_last_pressure_ = this->now();
+        msg_first_received_pressure_ = true;
+    }
 
     // void WtfNode::internal_sensor_callback(const pressure_bme280_driver::msg::Bme280Data &msg){
     //     msg_internal_sensor_filter_ = msg;
@@ -143,25 +143,28 @@ namespace riptide_wtf {
     }
 
     void WtfNode::update_internal_pressure_windows(){
-        if(msg_first_received_internal_sensor_filter_) {
-            mvwprintw(windows_internal_pressure_, 1, 30, "%f", (this->now() - time_last_internal_sensor_filter_).seconds());
+        // if(msg_first_received_internal_sensor_filter_) {
+        //     mvwprintw(windows_pressure_, 1, 30, "%f", (this->now() - time_last_internal_sensor_filter_).seconds());
 
-            // mvwprintw(windows_internal_pressure_, 3, 1, "pressure");
-            // mvwprintw(windows_internal_pressure_, 3, 30, to_string(msg_internal_sensor_filter_.pressure).c_str());
+        //     mvwprintw(windows_pressure_, 3, 1, "pressure");
+        //     mvwprintw(windows_pressure_, 3, 30, to_string(msg_pressure_.pressure).c_str());
 
-            // mvwprintw(windows_internal_pressure_, 4, 1, "temperature");
-            // mvwprintw(windows_internal_pressure_, 4, 30, to_string(msg_internal_sensor_filter_.temperature).c_str());
+        //     mvwprintw(windows_pressure_, 5, 1, "temperature");
+        //     mvwprintw(windows_pressure_, 5, 30, to_string(msg_pressure_.temperature).c_str());
 
-            // mvwprintw(windows_internal_pressure_, 5, 1, "humidity");
-            // mvwprintw(windows_internal_pressure_, 5, 30, to_string(msg_internal_sensor_filter_.humidity).c_str());
+        //     mvwprintw(windows_pressure_, 7, 1, "depth");
+        //     mvwprintw(windows_pressure_, 7, 30, to_string(msg_pressure_.pressure).c_str());
 
-            wrefresh(windows_internal_pressure_);
-        }
+        //     mvwprintw(windows_pressure_, 9, 1, "altitude");
+        //     mvwprintw(windows_pressure_, 9, 30, to_string(msg_pressure_.altitude).c_str());
+
+        //     wrefresh(windows_pressure_);
+        // }
     }
 
     void WtfNode::update_mission_windows(){
-        if(msg_first_received_waypoint_) {
-            mvwprintw(windows_mission_, 1, 30, "%f", (this->now() - time_last_internal_sensor_filter_).seconds());
+        // if(msg_first_received_waypoint_) {
+        //     mvwprintw(windows_mission_, 1, 30, "%f", (this->now() - time_last_internal_sensor_filter_).seconds());
 
             // mvwprintw(windows_mission_, 3, 1, "north");
             // mvwprintw(windows_mission_, 3, 30, to_string(msg_waypoint_.north).c_str());
@@ -196,12 +199,12 @@ namespace riptide_wtf {
             // mvwprintw(windows_mission_, 13, 1, "seafloor_landing");
             // mvwprintw(windows_mission_, 13, 30, msg_waypoint_.seafloor_landing  ? "True " : "False");
 
-            wrefresh(windows_mission_);
-        }
+        //     wrefresh(windows_mission_);
+        // }
     }
 
     void WtfNode::update_daemon_windows(){
-        mvwprintw(windows_daemon_, 1, 30, "%f", (this->now() - time_last_internal_sensor_filter_).seconds());
+        // mvwprintw(windows_daemon_, 1, 30, "%f", (this->now() - time_last_internal_sensor_filter_).seconds());
 
 
         // mvwprintw(windows_internal_pressure_, 3, 1, "pressure");
@@ -213,167 +216,167 @@ namespace riptide_wtf {
         // mvwprintw(windows_internal_pressure_, 5, 1, "humidity");
         // mvwprintw(windows_internal_pressure_, 5, 30, to_string(msg_internal_sensor_filter_.humidity).c_str());
 
-        wrefresh(windows_daemon_);
+        // wrefresh(windows_daemon_);
     }
 
     void WtfNode::update_safety_windows(){
-        if(msg_first_received_safety_) {
-            mvwprintw(windows_safety_, 1, 30, "%f", (this->now() - time_last_internal_sensor_filter_).seconds());
+        // if(msg_first_received_safety_) {
+        //     mvwprintw(windows_safety_, 1, 30, "%f", (this->now() - time_last_internal_sensor_filter_).seconds());
 
-            mvwprintw(windows_safety_, 3, 1, "global_safety_valid");
-            // mvwprintw(windows_safety_, 3, 30, msg_safety_.global_safety_valid ? "True " : "False");
+        //     mvwprintw(windows_safety_, 3, 1, "global_safety_valid");
+        //     // mvwprintw(windows_safety_, 3, 30, msg_safety_.global_safety_valid ? "True " : "False");
 
-            mvwprintw(windows_safety_, 4, 1, "published_frequency");
-            // mvwprintw(windows_safety_, 4, 30, msg_safety_.published_frequency ? "True " : "False");
+        //     mvwprintw(windows_safety_, 4, 1, "published_frequency");
+        //     // mvwprintw(windows_safety_, 4, 30, msg_safety_.published_frequency ? "True " : "False");
 
-            // mvwprintw(windows_safety_, 5, 1, "depth_limit");
-            // mvwprintw(windows_safety_, 5, 30, msg_safety_.depth_limit ? "True " : "False");
+        //     // mvwprintw(windows_safety_, 5, 1, "depth_limit");
+        //     // mvwprintw(windows_safety_, 5, 30, msg_safety_.depth_limit ? "True " : "False");
 
-            // mvwprintw(windows_safety_, 6, 1, "batteries_limit");
-            // mvwprintw(windows_safety_, 6, 30, msg_safety_.batteries_limit ? "True " : "False");
+        //     // mvwprintw(windows_safety_, 6, 1, "batteries_limit");
+        //     // mvwprintw(windows_safety_, 6, 30, msg_safety_.batteries_limit ? "True " : "False");
 
-            // mvwprintw(windows_safety_, 7, 1, "depressurization");
-            // mvwprintw(windows_safety_, 7, 30, msg_safety_.depressurization ? "True " : "False");
+        //     // mvwprintw(windows_safety_, 7, 1, "depressurization");
+        //     // mvwprintw(windows_safety_, 7, 30, msg_safety_.depressurization ? "True " : "False");
 
-            // mvwprintw(windows_safety_, 8, 1, "seafloor");
-            // mvwprintw(windows_safety_, 8, 30, msg_safety_.seafloor ? "True " : "False");
+        //     // mvwprintw(windows_safety_, 8, 1, "seafloor");
+        //     // mvwprintw(windows_safety_, 8, 30, msg_safety_.seafloor ? "True " : "False");
 
-            // mvwprintw(windows_safety_, 9, 1, "piston");
-            // mvwprintw(windows_safety_, 9, 30, msg_safety_.piston ? "True " : "False");
+        //     // mvwprintw(windows_safety_, 9, 1, "piston");
+        //     // mvwprintw(windows_safety_, 9, 30, msg_safety_.piston ? "True " : "False");
 
-            // mvwprintw(windows_safety_, 10, 1, "zero_depth");
-            // mvwprintw(windows_safety_, 10, 30, msg_safety_.zero_depth ? "True " : "False");
+        //     // mvwprintw(windows_safety_, 10, 1, "zero_depth");
+        //     // mvwprintw(windows_safety_, 10, 30, msg_safety_.zero_depth ? "True " : "False");
 
-            // mvwprintw(windows_safety_, 11, 1, "cpu");
-            // mvwprintw(windows_safety_, 11, 30, to_string(msg_safety_.cpu).c_str());
+        //     // mvwprintw(windows_safety_, 11, 1, "cpu");
+        //     // mvwprintw(windows_safety_, 11, 30, to_string(msg_safety_.cpu).c_str());
 
-            // mvwprintw(windows_safety_, 12, 1, "ram");
-            // mvwprintw(windows_safety_, 12, 30, to_string((int)msg_safety_.ram).c_str());
+        //     // mvwprintw(windows_safety_, 12, 1, "ram");
+        //     // mvwprintw(windows_safety_, 12, 30, to_string((int)msg_safety_.ram).c_str());
 
-            wrefresh(windows_safety_);
-        }
+        //     wrefresh(windows_safety_);
+        // }
     }
 
     void WtfNode::update_power(){
-        if(msg_first_received_power_data_) {
-            mvwprintw(windows_power_, 1, 30, "%f", (this->now() - time_last_internal_sensor_filter_).seconds());
+        // if(msg_first_received_power_data_) {
+        //     mvwprintw(windows_power_, 1, 30, "%f", (this->now() - time_last_internal_sensor_filter_).seconds());
 
-            // mvwprintw(windows_power_, 3, 1, "cell_volt[0]");
-            // mvwprintw(windows_power_, 3, 30, to_string(msg_power_data_.cell_volt[0]).c_str());
+        //     // mvwprintw(windows_power_, 3, 1, "cell_volt[0]");
+        //     // mvwprintw(windows_power_, 3, 30, to_string(msg_power_data_.cell_volt[0]).c_str());
 
-            // mvwprintw(windows_power_, 4, 1, "cell_volt[1]");
-            // mvwprintw(windows_power_, 4, 30, to_string(msg_power_data_.cell_volt[1]).c_str());
+        //     // mvwprintw(windows_power_, 4, 1, "cell_volt[1]");
+        //     // mvwprintw(windows_power_, 4, 30, to_string(msg_power_data_.cell_volt[1]).c_str());
 
-            // mvwprintw(windows_power_, 5, 1, "cell_volt[2]");
-            // mvwprintw(windows_power_, 5, 30, to_string(msg_power_data_.cell_volt[2]).c_str());
+        //     // mvwprintw(windows_power_, 5, 1, "cell_volt[2]");
+        //     // mvwprintw(windows_power_, 5, 30, to_string(msg_power_data_.cell_volt[2]).c_str());
 
-            // mvwprintw(windows_power_, 6, 1, "cell_volt[3]");
-            // mvwprintw(windows_power_, 6, 30, to_string(msg_power_data_.cell_volt[3]).c_str());
+        //     // mvwprintw(windows_power_, 6, 1, "cell_volt[3]");
+        //     // mvwprintw(windows_power_, 6, 30, to_string(msg_power_data_.cell_volt[3]).c_str());
 
-            // mvwprintw(windows_power_, 7, 1, "battery_volt");
-            // mvwprintw(windows_power_, 7, 30, to_string(msg_power_data_.battery_volt).c_str());
+        //     // mvwprintw(windows_power_, 7, 1, "battery_volt");
+        //     // mvwprintw(windows_power_, 7, 30, to_string(msg_power_data_.battery_volt).c_str());
 
-            // mvwprintw(windows_power_, 8, 1, "esc_current[0]");
-            // mvwprintw(windows_power_, 8, 30, to_string(msg_power_data_.esc_current[0]).c_str());
+        //     // mvwprintw(windows_power_, 8, 1, "esc_current[0]");
+        //     // mvwprintw(windows_power_, 8, 30, to_string(msg_power_data_.esc_current[0]).c_str());
 
-            // mvwprintw(windows_power_, 9, 1, "esc_current[1]");
-            // mvwprintw(windows_power_, 9, 30, to_string(msg_power_data_.esc_current[1]).c_str());
+        //     // mvwprintw(windows_power_, 9, 1, "esc_current[1]");
+        //     // mvwprintw(windows_power_, 9, 30, to_string(msg_power_data_.esc_current[1]).c_str());
 
-            // mvwprintw(windows_power_, 10, 1, "motor_current");
-            // mvwprintw(windows_power_, 10, 30, to_string(msg_power_data_.motor_current).c_str());
+        //     // mvwprintw(windows_power_, 10, 1, "motor_current");
+        //     // mvwprintw(windows_power_, 10, 30, to_string(msg_power_data_.motor_current).c_str());
 
-            // mvwprintw(windows_power_, 11, 1, "power_state");
-            // mvwprintw(windows_power_, 11, 30, to_string(msg_power_data_.power_state).c_str());
+        //     // mvwprintw(windows_power_, 11, 1, "power_state");
+        //     // mvwprintw(windows_power_, 11, 30, to_string(msg_power_data_.power_state).c_str());
 
-            wrefresh(windows_power_);
-        }
+        //     wrefresh(windows_power_);
+        // }
     }
 
     void WtfNode::update_depth(){
-        if(msg_first_received_depth_data_) {
-            mvwprintw(windows_depth_, 1, 30, "%f", (this->now() - time_last_internal_sensor_filter_).seconds());
+        // if(msg_first_received_depth_data_) {
+        //     mvwprintw(windows_depth_, 1, 30, "%f", (this->now() - time_last_internal_sensor_filter_).seconds());
 
-            // mvwprintw(windows_depth_, 3, 1, "depth");
-            // mvwprintw(windows_depth_, 3, 30, to_string(msg_depth_data_.depth).c_str());
+        //     // mvwprintw(windows_depth_, 3, 1, "depth");
+        //     // mvwprintw(windows_depth_, 3, 30, to_string(msg_depth_data_.depth).c_str());
 
-            // mvwprintw(windows_depth_, 4, 1, "velocity");
-            // mvwprintw(windows_depth_, 4, 30, to_string(msg_depth_data_.velocity).c_str());
+        //     // mvwprintw(windows_depth_, 4, 1, "velocity");
+        //     // mvwprintw(windows_depth_, 4, 30, to_string(msg_depth_data_.velocity).c_str());
 
-            // mvwprintw(windows_depth_, 5, 1, "zero_depth_pressure");
-            // mvwprintw(windows_depth_, 5, 30, to_string(msg_depth_data_.zero_depth_pressure).c_str());
+        //     // mvwprintw(windows_depth_, 5, 1, "zero_depth_pressure");
+        //     // mvwprintw(windows_depth_, 5, 30, to_string(msg_depth_data_.zero_depth_pressure).c_str());
 
-            // mvwprintw(windows_depth_, 6, 1, "pressure");
-            // mvwprintw(windows_depth_, 6, 30, to_string(msg_depth_data_.pressure).c_str());
+        //     // mvwprintw(windows_depth_, 6, 1, "pressure");
+        //     // mvwprintw(windows_depth_, 6, 30, to_string(msg_depth_data_.pressure).c_str());
 
-            wrefresh(windows_depth_);
-        }
+        //     wrefresh(windows_depth_);
+        // }
     }
 
     void WtfNode::update_piston(){
-        if(msg_first_received_piston_data_) {
-            mvwprintw(windows_piston_, 1, 30, "%f", (this->now() - time_last_internal_sensor_filter_).seconds());
+        // if(msg_first_received_piston_data_) {
+        //     mvwprintw(windows_piston_, 1, 30, "%f", (this->now() - time_last_internal_sensor_filter_).seconds());
 
-            // mvwprintw(windows_piston_, 3, 1, "position");
-            // mvwprintw(windows_piston_, 3, 30, to_string(msg_piston_data_.position).c_str());
+        //     // mvwprintw(windows_piston_, 3, 1, "position");
+        //     // mvwprintw(windows_piston_, 3, 30, to_string(msg_piston_data_.position).c_str());
 
-            // mvwprintw(windows_piston_, 4, 1, "position_set_point");
-            // mvwprintw(windows_piston_, 4, 30, to_string(msg_piston_data_.position_set_point).c_str());
+        //     // mvwprintw(windows_piston_, 4, 1, "position_set_point");
+        //     // mvwprintw(windows_piston_, 4, 30, to_string(msg_piston_data_.position_set_point).c_str());
 
-            // mvwprintw(windows_piston_, 5, 1, "switch_top");
-            // mvwprintw(windows_piston_, 5, 30, msg_piston_data_.switch_top? "True " : "False");
+        //     // mvwprintw(windows_piston_, 5, 1, "switch_top");
+        //     // mvwprintw(windows_piston_, 5, 30, msg_piston_data_.switch_top? "True " : "False");
 
-            // mvwprintw(windows_piston_, 6, 1, "switch_bottom");
-            // mvwprintw(windows_piston_, 6, 30, msg_piston_data_.switch_bottom? "True " : "False");
+        //     // mvwprintw(windows_piston_, 6, 1, "switch_bottom");
+        //     // mvwprintw(windows_piston_, 6, 30, msg_piston_data_.switch_bottom? "True " : "False");
 
-            // mvwprintw(windows_piston_, 7, 1, "enable");
-            // mvwprintw(windows_piston_, 7, 30, msg_piston_data_.enable? "True " : "False");
+        //     // mvwprintw(windows_piston_, 7, 1, "enable");
+        //     // mvwprintw(windows_piston_, 7, 30, msg_piston_data_.enable? "True " : "False");
 
-            // mvwprintw(windows_piston_, 8, 1, "motor_sens");
-            // mvwprintw(windows_piston_, 8, 30, msg_piston_data_.motor_sens? "True " : "False");
+        //     // mvwprintw(windows_piston_, 8, 1, "motor_sens");
+        //     // mvwprintw(windows_piston_, 8, 30, msg_piston_data_.motor_sens? "True " : "False");
 
-            // mvwprintw(windows_piston_, 9, 1, "state");
-            // mvwprintw(windows_piston_, 9, 30, to_string(msg_piston_data_.state).c_str());
+        //     // mvwprintw(windows_piston_, 9, 1, "state");
+        //     // mvwprintw(windows_piston_, 9, 30, to_string(msg_piston_data_.state).c_str());
 
-            // mvwprintw(windows_piston_, 10, 1, "motor_speed_set_point");
-            // mvwprintw(windows_piston_, 10, 30, to_string(msg_piston_data_.motor_speed_set_point).c_str());
+        //     // mvwprintw(windows_piston_, 10, 1, "motor_speed_set_point");
+        //     // mvwprintw(windows_piston_, 10, 30, to_string(msg_piston_data_.motor_speed_set_point).c_str());
 
-            // mvwprintw(windows_piston_, 11, 1, "motor_speed");
-            // mvwprintw(windows_piston_, 11, 30, to_string(msg_piston_data_.motor_speed).c_str());
+        //     // mvwprintw(windows_piston_, 11, 1, "motor_speed");
+        //     // mvwprintw(windows_piston_, 11, 30, to_string(msg_piston_data_.motor_speed).c_str());
 
-            // mvwprintw(windows_piston_, 12, 1, "battery_voltage");
-            // mvwprintw(windows_piston_, 12, 30, to_string(msg_piston_data_.battery_voltage).c_str());
+        //     // mvwprintw(windows_piston_, 12, 1, "battery_voltage");
+        //     // mvwprintw(windows_piston_, 12, 30, to_string(msg_piston_data_.battery_voltage).c_str());
 
-            // mvwprintw(windows_piston_, 13, 1, "motor_current");
-            // mvwprintw(windows_piston_, 13, 30, to_string(msg_piston_data_.motor_current).c_str());
+        //     // mvwprintw(windows_piston_, 13, 1, "motor_current");
+        //     // mvwprintw(windows_piston_, 13, 30, to_string(msg_piston_data_.motor_current).c_str());
 
-            wrefresh(windows_piston_);
-        }
+        //     wrefresh(windows_piston_);
+        // }
     }
 
     void WtfNode::update_depth_control(){
-        if(msg_first_received_depth_control_) {
-            mvwprintw(windows_depth_control_, 1, 30, "%f", (this->now() - time_last_internal_sensor_filter_).seconds());
+        // if(msg_first_received_depth_control_) {
+        //     mvwprintw(windows_depth_control_, 1, 30, "%f", (this->now() - time_last_internal_sensor_filter_).seconds());
 
-            // mvwprintw(windows_depth_control_, 3, 1, "position");
-            // mvwprintw(windows_depth_control_, 3, 30, to_string(msg_piston_data_.position).c_str());
+        //     // mvwprintw(windows_depth_control_, 3, 1, "position");
+        //     // mvwprintw(windows_depth_control_, 3, 30, to_string(msg_piston_data_.position).c_str());
 
-            // mvwprintw(windows_depth_control_, 4, 1, "u");
-            // mvwprintw(windows_depth_control_, 4, 30, to_string(msg_depth_control_.u).c_str());
+        //     // mvwprintw(windows_depth_control_, 4, 1, "u");
+        //     // mvwprintw(windows_depth_control_, 4, 30, to_string(msg_depth_control_.u).c_str());
 
-            // mvwprintw(windows_depth_control_, 5, 1, "y");
-            // mvwprintw(windows_depth_control_, 5, 30, to_string(msg_depth_control_.y).c_str());
+        //     // mvwprintw(windows_depth_control_, 5, 1, "y");
+        //     // mvwprintw(windows_depth_control_, 5, 30, to_string(msg_depth_control_.y).c_str());
 
-            // mvwprintw(windows_depth_control_, 6, 1, "dy");
-            // mvwprintw(windows_depth_control_, 6, 30, to_string(msg_depth_control_.dy).c_str());
+        //     // mvwprintw(windows_depth_control_, 6, 1, "dy");
+        //     // mvwprintw(windows_depth_control_, 6, 30, to_string(msg_depth_control_.dy).c_str());
 
-            // mvwprintw(windows_depth_control_, 7, 1, "piston_set_point");
-            // mvwprintw(windows_depth_control_, 7, 30, to_string(msg_depth_control_.piston_set_point).c_str());
+        //     // mvwprintw(windows_depth_control_, 7, 1, "piston_set_point");
+        //     // mvwprintw(windows_depth_control_, 7, 30, to_string(msg_depth_control_.piston_set_point).c_str());
 
-            // mvwprintw(windows_depth_control_, 8, 1, "mode");
-            // mvwprintw(windows_depth_control_, 8, 30, to_string(msg_depth_control_.mode).c_str());
+        //     // mvwprintw(windows_depth_control_, 8, 1, "mode");
+        //     // mvwprintw(windows_depth_control_, 8, 30, to_string(msg_depth_control_.mode).c_str());
 
-            wrefresh(windows_depth_control_);
-        }
+        //     wrefresh(windows_depth_control_);
+        // }
     }
 
     void WtfNode::update_robot(){

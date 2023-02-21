@@ -4,6 +4,8 @@
 #include <ncurses.h>
 // #include <systemd/sd-bus.h>
 
+#include <riptide_msgs/msg/pressure.hpp>
+
 
 using namespace std::chrono_literals;
 using namespace std;
@@ -28,7 +30,7 @@ namespace riptide_wtf {
             WINDOW *windows_robot_;
             WINDOW *windows_daemon_;
             WINDOW *windows_safety_;
-            WINDOW *windows_internal_pressure_;
+            WINDOW *windows_pressure_;
             WINDOW *windows_depth_;
             WINDOW *windows_power_;
             WINDOW *windows_depth_control_;
@@ -36,6 +38,7 @@ namespace riptide_wtf {
             WINDOW *windows_mission_;
 
             /// Variable
+            riptide_msgs::msg::Pressure msg_pressure_;
             // seabot2_safety::msg::SafetyStatus msg_safety_;
             // seabot2_depth_filter::msg::DepthPose msg_depth_data_;
             // pressure_bme280_driver::msg::Bme280Data msg_internal_sensor_filter_;
@@ -44,24 +47,24 @@ namespace riptide_wtf {
             // seabot2_mission::msg::Waypoint msg_waypoint_;
             // seabot2_depth_control::msg::DepthControlDebug msg_depth_control_;
 
-            rclcpp::Time time_last_safety_ = this->now();
-            rclcpp::Time time_last_depth_data_ = this->now();
-            rclcpp::Time time_last_internal_sensor_filter_ = this->now();
-            rclcpp::Time time_last_power_data_ = this->now();
-            rclcpp::Time time_last_piston_data_ = this->now();
-            rclcpp::Time time_last_waypoint_ = this->now();
-            rclcpp::Time time_last_depth_control_ = this->now();
+            // rclcpp::Time time_last_safety_ = this->now();
+            rclcpp::Time time_last_pressure_ = this->now();
+            // rclcpp::Time time_last_internal_sensor_filter_ = this->now();
+            // rclcpp::Time time_last_power_data_ = this->now();
+            // rclcpp::Time time_last_piston_data_ = this->now();
+            // rclcpp::Time time_last_waypoint_ = this->now();
+            // rclcpp::Time time_last_depth_control_ = this->now();
 
-            bool msg_first_received_safety_ = false;
-            bool msg_first_received_depth_data_ = false;
-            bool msg_first_received_internal_sensor_filter_ = false;
-            bool msg_first_received_power_data_ = false;
-            bool msg_first_received_piston_data_ = false;
-            bool msg_first_received_waypoint_ = false;
-            bool msg_first_received_depth_control_ = false;
+            // bool msg_first_received_safety_ = false;
+            bool msg_first_received_pressure_ = false;
+            // bool msg_first_received_internal_sensor_filter_ = false;
+            // bool msg_first_received_power_data_ = false;
+            // bool msg_first_received_piston_data_ = false;
+            // bool msg_first_received_waypoint_ = false;
+            // bool msg_first_received_depth_control_ = false;
 
             /// Interfaces
-            // rclcpp::Subscription<seabot2_safety::msg::SafetyStatus>::SharedPtr subscriber_safety_;
+            rclcpp::Subscription<riptide_msgs::msg::Pressure>::SharedPtr subscriber_pressure_;
             // rclcpp::Subscription<seabot2_depth_filter::msg::DepthPose>::SharedPtr subscriber_depth_data_;
             // rclcpp::Subscription<pressure_bme280_driver::msg::Bme280Data>::SharedPtr subscriber_internal_sensor_filter_;
             // rclcpp::Subscription<seabot2_power_driver::msg::PowerState>::SharedPtr subscriber_power_data_;
@@ -85,10 +88,10 @@ namespace riptide_wtf {
             void timer_callback();
 
             /**
-             * Depth Callback
+             * Pressure Callback
              * @param msg
              */
-            // void depth_callback(const seabot2_depth_filter::msg::DepthPose &msg);
+            void pressure_callback(const riptide_msgs::msg::Pressure &msg);
 
             /**
              * Internal sensor callback
