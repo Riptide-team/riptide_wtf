@@ -29,8 +29,8 @@ namespace riptide_wtf {
 
         initscr();
         windows_robot_              = subwin(stdscr, 5, 90, 0, 0);
+        windows_pressure_           = subwin(stdscr, 8, 44, 5, 0);
         // windows_daemon_             = subwin(stdscr, 5, 90, 14, 0);
-        windows_pressure_           = subwin(stdscr, 14, 44, 5, 0);
         // windows_internal_pressure_  = subwin(stdscr, 7, 44, 19, 0);
         // windows_power_              = subwin(stdscr, 13, 44, 26, 0);
         // windows_depth_control_      = subwin(stdscr, 11, 44, 39, 0);
@@ -144,18 +144,18 @@ namespace riptide_wtf {
 
     void WtfNode::update_internal_pressure_windows(){
         if(msg_first_received_pressure_) {
-            mvwprintw(windows_pressure_, 1, 30, "%f", (this->now() - time_last_pressure_).seconds());
+            mvwprintw(windows_pressure_, 1, 30, "%.2f s", (this->now() - time_last_pressure_).seconds());
 
-            mvwprintw(windows_pressure_, 3, 1, "pressure");
+            mvwprintw(windows_pressure_, 3, 3, "pressure");
             mvwprintw(windows_pressure_, 3, 30, "%.2f mbar", msg_pressure_.pressure);
 
-            mvwprintw(windows_pressure_, 4, 1, "temperature");
+            mvwprintw(windows_pressure_, 4, 3, "temperature");
             mvwprintw(windows_pressure_, 4, 30, "%.2f °C", msg_pressure_.temperature);
 
-            mvwprintw(windows_pressure_, 5, 1, "depth");
+            mvwprintw(windows_pressure_, 5, 3, "depth");
             mvwprintw(windows_pressure_, 5, 30,"%.2f m", msg_pressure_.depth);
 
-            mvwprintw(windows_pressure_, 6, 1, "altitude");
+            mvwprintw(windows_pressure_, 6, 3, "altitude");
             mvwprintw(windows_pressure_, 6, 30, "%.2f m", msg_pressure_.altitude);
 
             wrefresh(windows_pressure_);
