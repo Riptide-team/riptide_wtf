@@ -65,7 +65,7 @@ class RiptideWTF(Node):
         manager = dbus.Interface(bus.get_object('org.freedesktop.systemd1', '/org/freedesktop/systemd1'), 'org.freedesktop.systemd1.Manager')
 
         # Get the unit object for your service
-        unit = manager.LoadUnit('sshd.service')
+        unit = manager.LoadUnit('ros2_control.service')
 
         # Get the properties of the unit
         props = dbus.Interface(bus.get_object('org.freedesktop.systemd1', unit), 'org.freedesktop.DBus.Properties')
