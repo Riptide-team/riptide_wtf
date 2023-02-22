@@ -43,14 +43,17 @@ class RiptideWTF(Node):
         curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)
         curses.init_pair(3, curses.COLOR_BLUE, curses.COLOR_BLACK)
 
+        self.daemonWindow = curses.newwin(4, 65, 1, 1)
+        self.daemonWindow.box()
+
         self.pressureWindow = curses.newwin(7, 32, 5, 1)
         self.pressureWindow.box()
 
         self.batteryWindow = curses.newwin(7, 32, 5, 34)
         self.batteryWindow.box()
 
-        self.daemonWindow = curses.newwin(4, 65, 1, 1)
-        self.daemonWindow.box()
+        self.imuWindow = curses.newwin(13, 32, 5, 1)
+        self.imuWindow.box()
     
     def daemon_window(self):
         color = curses.color_pair(1)
@@ -69,10 +72,10 @@ class RiptideWTF(Node):
         status = props.Get('org.freedesktop.systemd1.Unit', 'ActiveState')
 
         self.daemonWindow.addstr(2, 15, status)
-        if (status=="active"):
-            color = curses.color_pair(1)
-        else:
+        if (status=="inactive"):
             color = curses.color_pair(2)
+        else:
+            color = curses.color_pair(1)
         
         self.daemonWindow.addstr(2, 4, f"• Ros2Control ({status})", color)
         if status != "active":
