@@ -42,4 +42,10 @@ endif()
 install(TARGETS wtf_node
         DESTINATION lib/${PROJECT_NAME})
 
+# Install Python executables
+install(PROGRAMS
+  scripts/riptide_wtf.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 ament_package()

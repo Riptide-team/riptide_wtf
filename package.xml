@@ -14,6 +14,8 @@
   <build_depend>riptide_msgs</build_depend>
   <build_depend>ncurses</build_depend>
 
+  <depend>rclpy</depend>
+
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 
