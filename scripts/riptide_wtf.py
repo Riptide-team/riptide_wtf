@@ -5,6 +5,9 @@ from rclpy.node import Node
 from riptide_msgs.msg import Pressure
 from sensor_msgs.msg import Imu, BatteryState
 
+import dbus
+from systemd import journal
+
 import curses
 
 class RiptideWTF(Node):
@@ -19,8 +22,6 @@ class RiptideWTF(Node):
         self.battery_card_msg = BatteryState()
 
         self.init_ncurses()
-        self.pressure_window()
-        self.battery_window()
 
         timer_period = 1  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
@@ -28,6 +29,7 @@ class RiptideWTF(Node):
     def timer_callback(self):
         self.pressure_window()
         self.battery_window()
+        self.daemon_window()
 
     def init_ncurses(self):
         self.stdscr = curses.initscr()
@@ -37,30 +39,67 @@ class RiptideWTF(Node):
         if curses.has_colors():
             curses.start_color()
 
-        self.pressureWindow = curses.newwin(7, 40, 1, 1)
+        curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
+        curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)
+        curses.init_pair(3, curses.COLOR_BLUE, curses.COLOR_BLACK)
+
+        self.pressureWindow = curses.newwin(7, 32, 5, 1)
         self.pressureWindow.box()
 
-        self.batteryWindow = curses.newwin(7, 40, 1, 42)
+        self.batteryWindow = curses.newwin(7, 32, 5, 34)
         self.batteryWindow.box()
 
+        self.daemonWindow = curses.newwin(4, 65, 1, 1)
+        self.daemonWindow.box()
+    
+    def daemon_window(self):
+        color = curses.color_pair(1)
+
+        # Get the system bus
+        bus = dbus.SystemBus()
+
+        # Get the service manager object
+        manager = dbus.Interface(bus.get_object('org.freedesktop.systemd1', '/org/freedesktop/systemd1'), 'org.freedesktop.systemd1.Manager')
+
+        # Get the unit object for your service
+        unit = manager.LoadUnit('sshd.service')
+
+        # Get the properties of the unit
+        props = dbus.Interface(bus.get_object('org.freedesktop.systemd1', unit), 'org.freedesktop.DBus.Properties')
+        status = props.Get('org.freedesktop.systemd1.Unit', 'ActiveState')
+
+        self.daemonWindow.addstr(2, 15, status)
+        if (status=="active"):
+            color = curses.color_pair(1)
+        else:
+            color = curses.color_pair(2)
+        
+        self.daemonWindow.addstr(2, 4, f"• Ros2Control ({status})", color)
+        if status != "active":
+            color = curses.color_pair(2)
+
+        self.daemonWindow.addstr(1, 2, "✔ Daemon", curses.A_BOLD | color)
+
+        self.daemonWindow.refresh()
+
     def pressure_window(self):
-        self.pressureWindow.addstr(1, 4, "Pressure", curses.A_BOLD)
+        self.pressureWindow.addstr(1, 2, "• Pressure", curses.A_BOLD | curses.color_pair(3))
         self.pressureWindow.addstr(2, 4, "pressure:")
-        self.pressureWindow.addstr(2, 26, f"{self.pressure_msg.pressure:.2f} mbar".rjust(10))
+        self.pressureWindow.addstr(2, 20, f"{self.pressure_msg.pressure:.2f} mbar".rjust(10))
         self.pressureWindow.addstr(3, 4, "temperature:")
-        self.pressureWindow.addstr(3, 24, f"{self.pressure_msg.temperature:.2f} °C".rjust(10))
+        self.pressureWindow.addstr(3, 18, f"{self.pressure_msg.temperature:.2f} °C".rjust(10))
         self.pressureWindow.addstr(4, 4, "depth:")
-        self.pressureWindow.addstr(4, 23, f"{self.pressure_msg.depth:.2f} m".rjust(10))
+        self.pressureWindow.addstr(4, 17, f"{self.pressure_msg.depth:.2f} m".rjust(10))
         self.pressureWindow.addstr(5, 4, "altitude:")
-        self.pressureWindow.addstr(5, 23, f"{self.pressure_msg.altitude:.2f} m".rjust(10))
+        self.pressureWindow.addstr(5, 17, f"{self.pressure_msg.altitude:.2f} m".rjust(10))
         self.pressureWindow.refresh()
 
     def battery_window(self):
-        self.batteryWindow.addstr(1, 4, "Battery", curses.A_BOLD)
+        self.batteryWindow.addstr(1, 2, "• Battery", curses.A_BOLD | curses.color_pair(3))
         self.batteryWindow.addstr(2, 4, "tension:")
-        self.batteryWindow.addstr(2, 23, f"{self.battery_card_msg.voltage:.2f} V".rjust(10))
+        self.batteryWindow.addstr(2, 19, f"{self.battery_card_msg.voltage:.2f} V".rjust(10))
         self.batteryWindow.addstr(3, 4, "current:")
-        self.batteryWindow.addstr(3, 23, f"{self.battery_card_msg.current:.2f} A".rjust(10))
+        self.batteryWindow.addstr(3, 19, f"{self.battery_card_msg.current:.2f} A".rjust(10))
         self.batteryWindow.refresh()
 
     def pressure_callback(self, msg):
