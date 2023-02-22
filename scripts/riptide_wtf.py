@@ -22,6 +22,13 @@ class RiptideWTF(Node):
         self.pressure_window()
         self.battery_window()
 
+        timer_period = 1  # seconds
+        self.timer = self.create_timer(timer_period, self.timer_callback)
+
+    def timer_callback(self):
+        self.pressure_window()
+        self.battery_window()
+
     def init_ncurses(self):
         self.stdscr = curses.initscr()
         curses.noecho()
