@@ -77,9 +77,7 @@ class RiptideWTF(Node):
         else:
             color = curses.color_pair(1)
         
-        self.daemonWindow.refresh()
-        
-        self.daemonWindow.addstr(2, 4, f"• Ros2Control ({status})", color)
+        self.daemonWindow.addstr(2, 4, f"• Ros2Control ({status})        ", color)
         if status != "active":
             color = curses.color_pair(2)
 
