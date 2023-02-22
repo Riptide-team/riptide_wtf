@@ -2,7 +2,7 @@
 
 import rclpy
 from rclpy.node import Node
-from riptide_msgs.msg import Pressure
+from riptide_msgs.msg import Pressure, Actuators
 from sensor_msgs.msg import Imu, BatteryState
 
 import dbus
@@ -72,10 +72,10 @@ class RiptideWTF(Node):
         status = props.Get('org.freedesktop.systemd1.Unit', 'ActiveState')
 
         self.daemonWindow.addstr(2, 15, status)
-        if (status=="inactive"):
-            color = curses.color_pair(2)
-        else:
+        if (status=="active"):
             color = curses.color_pair(1)
+        else:
+            color = curses.color_pair(2)
         
         self.daemonWindow.addstr(2, 4, f"• Ros2Control ({status})        ", color)
         if status != "active":
