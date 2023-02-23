@@ -17,9 +17,12 @@ class RiptideWTF(Node):
         
         self.pressure_subscription = self.create_subscription(Pressure, '/riptide_1/pressure_broadcaster/pressure_status', self.pressure_callback, 10)
         self.battery_card_subscription = self.create_subscription(BatteryState, '/riptide_1/battery_card_broadcaster/battery_status', self.battery_card_callback, 10)
+        self.actuators_subscription = self.create_subscription(Actuators, '/riptide_1/actuators_broadcaster/actuators_status', self.actuators_callback, 10)
 
         self.pressure_msg = Pressure()
         self.battery_card_msg = BatteryState()
+        self.actuators_msg = Actuators()
+        self.imu_msg = Imu()
 
         self.init_ncurses()
 
@@ -27,9 +30,11 @@ class RiptideWTF(Node):
         self.timer = self.create_timer(timer_period, self.timer_callback)
 
     def timer_callback(self):
+        self.daemon_window()
         self.pressure_window()
         self.battery_window()
-        self.daemon_window()
+        self.imu_window()
+        self.actuators_window()
 
     def init_ncurses(self):
         self.stdscr = curses.initscr()
@@ -52,8 +57,11 @@ class RiptideWTF(Node):
         self.batteryWindow = curses.newwin(7, 32, 5, 34)
         self.batteryWindow.box()
 
-        self.imuWindow = curses.newwin(13, 32, 5, 1)
+        self.imuWindow = curses.newwin(11, 32, 12, 1)
         self.imuWindow.box()
+
+        self.actuatorsWindow = curses.newwin(7, 32, 12, 34)
+        self.actuatorsWindow.box()
     
     def daemon_window(self):
         color = curses.color_pair(1)
@@ -97,6 +105,18 @@ class RiptideWTF(Node):
         self.pressureWindow.addstr(5, 17, f"{self.pressure_msg.altitude:.2f} m".rjust(10))
         self.pressureWindow.refresh()
 
+    def actuators_window(self):
+        self.actuatorsWindow.addstr(1, 2, "• Actuators", curses.A_BOLD | curses.color_pair(3))
+        self.actuatorsWindow.addstr(2, 4, "thruster:")
+        self.actuatorsWindow.addstr(2, 20, f"{self.actuators_msg.thruster:.2f} mbar".rjust(10))
+        self.actuatorsWindow.addstr(3, 4, "d_fin:")
+        self.actuatorsWindow.addstr(3, 18, f"{self.actuators_msg.d_fin:.2f} °C".rjust(10))
+        self.actuatorsWindow.addstr(4, 4, "p_fin:")
+        self.actuatorsWindow.addstr(4, 17, f"{self.actuators_msg.p_fin:.2f} m".rjust(10))
+        self.actuatorsWindow.addstr(5, 4, "s_fin:")
+        self.actuatorsWindow.addstr(5, 17, f"{self.actuators_msg.s_fin:.2f} m".rjust(10))
+        self.actuatorsWindow.refresh()
+
     def battery_window(self):
         self.batteryWindow.addstr(1, 2, "• Battery", curses.A_BOLD | curses.color_pair(3))
         self.batteryWindow.addstr(2, 4, "tension:")
@@ -105,11 +125,32 @@ class RiptideWTF(Node):
         self.batteryWindow.addstr(3, 19, f"{self.battery_card_msg.current:.2f} A".rjust(10))
         self.batteryWindow.refresh()
 
+    def imu_window(self):
+        self.imuWindow.addstr(1, 2, "• Imu", curses.A_BOLD | curses.color_pair(3))
+        self.imuWindow.addstr(2, 4, "Linear acceleration:")
+        self.imuWindow.addstr(3, 6, "x:")
+        self.imuWindow.addstr(3, 20, f"{self.imu_msg.linear_acceleration.x:.2f} m/s^2".rjust(10))
+        self.imuWindow.addstr(4, 6, "y:")
+        self.imuWindow.addstr(4, 20, f"{self.imu_msg.linear_acceleration.y:.2f} m/s^2".rjust(10))
+        self.imuWindow.addstr(5, 6, "z:")
+        self.imuWindow.addstr(5, 20, f"{self.imu_msg.linear_acceleration.z:.2f} m/s^2".rjust(10))
+        self.imuWindow.addstr(6, 4, "Angular velocity:")
+        self.imuWindow.addstr(7, 6, "x:")
+        self.imuWindow.addstr(7, 20, f"{self.imu_msg.angular_velocity.x:.2f} rad/s".rjust(10))
+        self.imuWindow.addstr(8, 6, "y:")
+        self.imuWindow.addstr(8, 20, f"{self.imu_msg.angular_velocity.y:.2f} rad/s".rjust(10))
+        self.imuWindow.addstr(9, 6, "z:")
+        self.imuWindow.addstr(9, 20, f"{self.imu_msg.angular_velocity.z:.2f} rad/s".rjust(10))
+        self.imuWindow.refresh()
+
     def pressure_callback(self, msg):
         self.pressure_msg = msg
 
     def battery_card_callback(self, msg):
         self.battery_card_msg = msg
+
+    def actuators_callback(self, msg):
+        self.actuators_msg = msg
 
 
 def main(args=None):
