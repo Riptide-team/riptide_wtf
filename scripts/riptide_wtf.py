@@ -54,8 +54,6 @@ class RiptideWTF(Node):
         curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
         curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)
         curses.init_pair(3, curses.COLOR_BLUE, curses.COLOR_BLACK)
-        curses.init_color(8, 498, 549, 553)
-        curses.init_pair(4, 8, curses.COLOR_BLACK)
 
         self.daemonWindow = curses.newwin(4, 65, 1, 1)
         self.daemonWindow.box()
@@ -103,19 +101,20 @@ class RiptideWTF(Node):
         self.daemonWindow.refresh()
 
     def duration_ms_from_times(self, t0):
-        t = self.get_clock().now() - t0
-        return int(t.nanoseconds / 1e6)
+        t1 = self.get_clock().now()
+        t = t1.nanoseconds / 1e6 - t0.nanoseconds / 1e6
+        return int(t)
 
     def pressure_window(self):
         self.pressureWindow.addstr(1, 2, "• Pressure", curses.A_BOLD | curses.color_pair(3))
 
-        # Timestamp
-        duration = self.duration_ms_from_times(self.pressure_time)
-        if (duration < 100):
-            color = curses.color_pair(1)
-        else:
-            color = curses.color_pair(2)
-        self.pressureWindow.addstr(1, 18, f"{duration} ms".rjust(10), color)
+        # # Timestamp
+        # duration = self.duration_ms_from_times(self.pressure_time)
+        # if (duration < 100):
+        #     color = curses.color_pair(1)
+        # else:
+        #     color = curses.color_pair(2)
+        # self.pressureWindow.addstr(1, 18, f"{duration} ms".rjust(10), color)
 
         self.pressureWindow.addstr(2, 4, "pressure:")
         self.pressureWindow.addstr(2, 20, f"{self.pressure_msg.pressure:.2f} mbar".rjust(10))
@@ -131,13 +130,13 @@ class RiptideWTF(Node):
         self.actuatorsWindow.addstr(1, 2, "• Actuators", curses.A_BOLD | curses.color_pair(3))
         self.actuatorsWindow.addstr(2, 4, "thruster:")
 
-        # Timestamp
-        duration = self.duration_ms_from_times(self.actuators_time)
-        if (duration < 100):
-            color = curses.color_pair(1)
-        else:
-            color = curses.color_pair(2)
-        self.actuatorsWindow.addstr(1, 19, f"{duration} ms".rjust(10), color)
+        # # Timestamp
+        # duration = self.duration_ms_from_times(self.actuators_time)
+        # if (duration < 100):
+        #     color = curses.color_pair(1)
+        # else:
+        #     color = curses.color_pair(2)
+        # self.actuatorsWindow.addstr(1, 19, f"{duration} ms".rjust(10), color)
 
         self.actuatorsWindow.addstr(2, 20, f"{self.actuators_msg.thruster:.2f} usi".rjust(10))
         self.actuatorsWindow.addstr(3, 4, "d_fin:")
@@ -151,13 +150,13 @@ class RiptideWTF(Node):
     def battery_window(self):
         self.batteryWindow.addstr(1, 2, "• Battery", curses.A_BOLD | curses.color_pair(3))
 
-        # Timestamp
-        duration = self.duration_ms_from_times(self.battery_card_time)
-        if (duration < 100):
-            color = curses.color_pair(1)
-        else:
-            color = curses.color_pair(2)
-        self.batteryWindow.addstr(1, 20, f"{duration} ms".rjust(10), color)
+        # # Timestamp
+        # duration = self.duration_ms_from_times(self.battery_card_time)
+        # if (duration < 100):
+        #     color = curses.color_pair(1)
+        # else:
+        #     color = curses.color_pair(2)
+        # self.batteryWindow.addstr(1, 20, f"{duration} ms".rjust(10), color)
 
         self.batteryWindow.addstr(2, 4, "tension:")
         self.batteryWindow.addstr(2, 20, f"{self.battery_card_msg.voltage:.2f} V".rjust(10))
@@ -168,13 +167,13 @@ class RiptideWTF(Node):
     def imu_window(self):
         self.imuWindow.addstr(1, 2, "• Imu", curses.A_BOLD | curses.color_pair(3))
 
-        # Timestamp
-        duration = self.duration_ms_from_times(self.imu_time)
-        if (duration < 100):
-            color = curses.color_pair(1)
-        else:
-            color = curses.color_pair(2)
-        self.imuWindow.addstr(1, 18, f"{duration} ms".rjust(10), color)
+        # # Timestamp
+        # duration = self.duration_ms_from_times(self.imu_time)
+        # if (duration < 100):
+        #     color = curses.color_pair(1)
+        # else:
+        #     color = curses.color_pair(2)
+        # self.imuWindow.addstr(1, 18, f"{duration} ms".rjust(10), color)
 
         self.imuWindow.addstr(2, 4, "Linear acceleration:")
         self.imuWindow.addstr(3, 6, "x:")
