@@ -18,6 +18,7 @@ class RiptideWTF(Node):
         self.pressure_subscription = self.create_subscription(Pressure, '/riptide_1/pressure_broadcaster/pressure_status', self.pressure_callback, 10)
         self.battery_card_subscription = self.create_subscription(BatteryState, '/riptide_1/battery_card_broadcaster/battery_status', self.battery_card_callback, 10)
         self.actuators_subscription = self.create_subscription(Actuators, '/riptide_1/actuators_broadcaster/actuators_status', self.actuators_callback, 10)
+        self.imu_subscription = self.create_subscription(Imu, '/riptide_1/imu_broadcaster/imu_status', self.actuators_callback, 10)
 
         self.pressure_msg = Pressure()
         self.battery_card_msg = BatteryState()
@@ -151,6 +152,9 @@ class RiptideWTF(Node):
 
     def actuators_callback(self, msg):
         self.actuators_msg = msg
+
+    def imu_callback(self, msg):
+        self.imu_msg = msg
 
 
 def main(args=None):
