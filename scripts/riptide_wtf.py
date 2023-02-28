@@ -11,8 +11,12 @@ import dbus
 import os
 import signal
 import sys
+from pynput import keyboard
 
+import numpy as np
 from scipy.spatial.transform import Rotation
+
+from Window import InfoWindow, StatusWindow, TimedWindow
 
 class RiptideWTF(Node):
 
@@ -21,40 +25,51 @@ class RiptideWTF(Node):
 
         self.duration_peremted = 10000
         
-        self.pressure_subscription = self.create_subscription(Pressure, '/riptide_1/pressure_broadcaster/pressure_status', self.pressure_callback, 10)
+        self.barometer_subscription = self.create_subscription(Pressure, '/riptide_1/pressure_broadcaster/pressure_status', self.barometer_callback, 10)
         self.battery_card_subscription = self.create_subscription(BatteryState, '/riptide_1/battery_card_broadcaster/battery_status', self.battery_card_callback, 10)
         self.actuators_subscription = self.create_subscription(Actuators, '/riptide_1/actuators_broadcaster/actuators_status', self.actuators_callback, 10)
         self.imu_subscription = self.create_subscription(Imu, '/riptide_1/imu_broadcaster/imu_status', self.imu_callback, 10)
 
-        self.pressure_msg = Pressure()
+        self.barometer_msg = Pressure()
         self.battery_card_msg = BatteryState()
         self.actuators_msg = Actuators()
         self.imu_msg = Imu()
 
-        self.pressure_time = self.get_clock().now()
+        self.barometer_time = self.get_clock().now()
         self.battery_card_time = self.get_clock().now()
         self.actuators_time = self.get_clock().now()
         self.imu_time = self.get_clock().now()
 
-        timer_period = 0.25  # seconds
+        timer_period = 0.1  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
 
         self.init_ncurses()
         signal.signal(signal.SIGINT, self.sigint_handler)
 
-    def sigint_handler(self, sig, frame):
+        self.listener = keyboard.Listener(
+            on_press=self.keyboard_press,
+            on_release=self.keyboard_release
+        )
+        self.listener.start()
+
+        self.current_tab = 0
+
+    def sigint_handler(self, sig=None, frame=None):
+        self.listener.stop()
         rclpy.shutdown()
         curses.endwin()
-        os.system('cls||clear')
+        os.system('clear')
         sys.exit(0)
 
     def timer_callback(self):
-        self.host_window()
-        self.daemon_window()
-        self.pressure_window()
-        self.battery_window()
-        self.imu_window()
-        self.actuators_window()
+        self.menu_window()
+        if self.current_tab == 0:
+            self.host_window()
+            self.daemon_window()
+            self.barometer_window()
+            self.battery_window()
+            self.imu_window()
+            self.actuators_window()
 
     def init_ncurses(self):
         self.stdscr = curses.initscr()
@@ -67,28 +82,31 @@ class RiptideWTF(Node):
         for i in range(0, curses.COLORS):
             curses.init_pair(i + 1, i, -1)
 
-        self.hostWindow = curses.newwin(3, 33, 1, 1)
-        self.hostWindow.box()
-
-        self.daemonWindow = curses.newwin(3, 33, 1, 35)
-        self.daemonWindow.box()
-
-        self.actuatorsWindow = curses.newwin(6, 33, 4, 1)
-        self.actuatorsWindow.box()
-
-        self.pressureWindow = curses.newwin(6, 33, 4, 35)
-        self.pressureWindow.box()
-
-        self.imuWindow = curses.newwin(14, 33, 10, 1)
-        self.imuWindow.box()
-
-        self.batteryWindow = curses.newwin(4, 33, 10, 35)
-        self.batteryWindow.box()
+        self.menuWindow = InfoWindow("Menu", 3, 65, 1, 1)
+        self.hostWindow = InfoWindow("Host", 3, 32, 1, 4)
+        self.batteryWindow = TimedWindow("Battery", 4, 32, 1, 7)
+        self.barometerWindow = TimedWindow("Barometer", 6, 32, 1, 11)
+        self.actuatorsWindow = TimedWindow("Actuators", 6, 32, 1, 17)
+        self.daemonWindow = StatusWindow("Daemon", 3, 32, 34, 4)
+        self.imuWindow = TimedWindow("Imu", 14, 32, 34, 7)
 
     def host_window(self):
-        self.hostWindow.addstr(0, 1, f" • Host ", curses.A_BOLD | curses.color_pair(5))
-        self.hostWindow.addstr(1, 4, f"{os.uname()[1]}")
+        self.hostWindow.window.addstr(1, 4, f"{os.uname()[1]}", curses.color_pair(255))
         self.hostWindow.refresh()
+
+    def menu_window(self):
+        self.menuWindow.window.addstr(1, 2, "␛ Quit", curses.color_pair(255))
+        self.menuWindow.window.addstr(1, 15, "⭾ Change tab", curses.color_pair(255))
+
+        color = curses.color_pair(5)
+        highlight_color = curses.A_REVERSE | curses.color_pair(5)
+        if (self.current_tab == 0):
+            self.menuWindow.window.addstr(1, 43, "⒈ Sensors", highlight_color)
+            self.menuWindow.window.addstr(1, 53, "⒉ Launcher", color)
+        else:
+            self.menuWindow.window.addstr(1, 43, "⒈ Sensors", color)
+            self.menuWindow.window.addstr(1, 53, "⒉ Launcher", highlight_color)
+        self.menuWindow.refresh()
     
     def daemon_window(self):
         # Get the system bus
@@ -107,88 +125,62 @@ class RiptideWTF(Node):
         color = curses.color_pair(3)
         if (status!="active"):
             color = curses.color_pair(2)
-        self.daemonWindow.addstr(1, 3, f"• Ros2Control ({status})".ljust(29), color)
-
-        marker = "✔"
-        color = curses.color_pair(3)
-        if status != "active":
-            marker = "✘"
-            color = curses.color_pair(2)
-
-        self.daemonWindow.addstr(0, 2, f" {marker} Daemon ", curses.A_BOLD | color)
+        self.daemonWindow.window.addstr(1, 3, f"• Ros2Control ({status})".ljust(28), color)
         self.daemonWindow.refresh()
 
-    def pressure_window(self):
-        marker = "✔"
-        color = curses.color_pair(3)
-        duration = self.duration_ms_from_times(self.pressure_time)
-        if (duration > self.duration_peremted):
-            marker = "✘"
-            color = curses.color_pair(2)
-        self.pressureWindow.addstr(0, 1, f" {marker} Pressure ({duration} ms) ", curses.A_BOLD | color)
+    def barometer_window(self):
+        self.barometerWindow.message_duration = self.duration_ms_from_times(self.barometer_time)
+        if (self.barometerWindow.message_duration > self.duration_peremted):
+            self.barometerWindow.expired = True
 
-        self.pressureWindow.addstr(1, 2, "• pressure:")
-        self.pressureWindow.addstr(1, 17, f"{self.pressure_msg.pressure:.2f}".rjust(8))
-        self.pressureWindow.addstr(1, 26, "mbar")
-        self.pressureWindow.addstr(2, 2, "• temperature:")
-        self.pressureWindow.addstr(2, 17, f"{self.pressure_msg.temperature:.2f}".rjust(8))
-        self.pressureWindow.addstr(2, 26, "°C")
-        self.pressureWindow.addstr(3, 2, "• depth:")
-        self.pressureWindow.addstr(3, 17, f"{self.pressure_msg.depth:.2f}".rjust(8))
-        self.pressureWindow.addstr(3, 26, "m")
-        self.pressureWindow.addstr(4, 2, "• altitude:")
-        self.pressureWindow.addstr(4, 17, f"{self.pressure_msg.altitude:.2f}".rjust(8))
-        self.pressureWindow.addstr(4, 26, "m")
-        self.pressureWindow.refresh()
+        self.barometerWindow.window.addstr(1, 2, "• pressure:", curses.color_pair(255))
+        self.barometerWindow.window.addstr(1, 17, f"{self.barometer_msg.pressure:.2f}".rjust(8), curses.color_pair(255))
+        self.barometerWindow.window.addstr(1, 26, "mbar", curses.color_pair(255))
+        self.barometerWindow.window.addstr(2, 2, "• temperature:", curses.color_pair(255))
+        self.barometerWindow.window.addstr(2, 17, f"{self.barometer_msg.temperature:.2f}".rjust(8), curses.color_pair(255))
+        self.barometerWindow.window.addstr(2, 26, "°C", curses.color_pair(255))
+        self.barometerWindow.window.addstr(3, 2, "• depth:", curses.color_pair(255))
+        self.barometerWindow.window.addstr(3, 17, f"{self.barometer_msg.depth:.2f}".rjust(8), curses.color_pair(255))
+        self.barometerWindow.window.addstr(3, 26, "m", curses.color_pair(255))
+        self.barometerWindow.window.addstr(4, 2, "• altitude:", curses.color_pair(255))
+        self.barometerWindow.window.addstr(4, 17, f"{self.barometer_msg.altitude:.2f}".rjust(8), curses.color_pair(255))
+        self.barometerWindow.window.addstr(4, 26, "m", curses.color_pair(255))
+        self.barometerWindow.refresh()
 
     def actuators_window(self):
-        marker = "✔"
-        color = curses.color_pair(3)
-        duration = self.duration_ms_from_times(self.actuators_time)
-        if (duration > self.duration_peremted):
-            marker = "✘"
-            color = curses.color_pair(2)
-        self.actuatorsWindow.addstr(0, 1, f" {marker} Actuators ({duration} ms) ", curses.A_BOLD | color)
-
-        self.actuatorsWindow.addstr(1, 2, "• thruster:")
-        self.actuatorsWindow.addstr(1, 17, f"{self.actuators_msg.thruster:.2f}".rjust(8))
-        self.actuatorsWindow.addstr(1, 26, "usi")
-        self.actuatorsWindow.addstr(2, 2, "• d_fin:")
-        self.actuatorsWindow.addstr(2, 17, f"{self.actuators_msg.d_fin:.2f}".rjust(8))
-        self.actuatorsWindow.addstr(2, 26, "rad")
-        self.actuatorsWindow.addstr(3, 2, "• p_fin:")
-        self.actuatorsWindow.addstr(3, 17, f"{self.actuators_msg.p_fin:.2f}".rjust(8))
-        self.actuatorsWindow.addstr(3, 26, "rad")
-        self.actuatorsWindow.addstr(4, 2, "• s_fin:")
-        self.actuatorsWindow.addstr(4, 17, f"{self.actuators_msg.s_fin:.2f}".rjust(8))
-        self.actuatorsWindow.addstr(4, 26, "rad")
+        self.actuatorsWindow.message_duration = self.duration_ms_from_times(self.actuators_time)
+        if (self.actuatorsWindow.message_duration > self.duration_peremted):
+            self.actuatorsWindow.expired = True
+        self.actuatorsWindow.window.addstr(1, 2, "• thruster:", curses.color_pair(255))
+        self.actuatorsWindow.window.addstr(1, 17, f"{self.actuators_msg.thruster:.2f}".rjust(8), curses.color_pair(255))
+        self.actuatorsWindow.window.addstr(1, 26, "usi", curses.color_pair(255))
+        self.actuatorsWindow.window.addstr(2, 2, "• d fin:", curses.color_pair(255))
+        self.actuatorsWindow.window.addstr(2, 17, f"{self.actuators_msg.d_fin*180/np.pi:.2f}".rjust(8), curses.color_pair(255))
+        self.actuatorsWindow.window.addstr(2, 26, "°", curses.color_pair(255))
+        self.actuatorsWindow.window.addstr(3, 2, "• p fin:", curses.color_pair(255))
+        self.actuatorsWindow.window.addstr(3, 17, f"{self.actuators_msg.p_fin*180/np.pi:.2f}".rjust(8), curses.color_pair(255))
+        self.actuatorsWindow.window.addstr(3, 26, "°", curses.color_pair(255))
+        self.actuatorsWindow.window.addstr(4, 2, "• s fin:", curses.color_pair(255))
+        self.actuatorsWindow.window.addstr(4, 17, f"{self.actuators_msg.s_fin*180/np.pi:.2f}".rjust(8), curses.color_pair(255))
+        self.actuatorsWindow.window.addstr(4, 26, "°", curses.color_pair(255))
         self.actuatorsWindow.refresh()
 
     def battery_window(self):
-        marker = "✔"
-        color = curses.color_pair(3)
-        duration = self.duration_ms_from_times(self.battery_card_time)
-        if (duration > self.duration_peremted):
-            marker = "✘"
-            color = curses.color_pair(2)
-        self.batteryWindow.addstr(0, 2, f" {marker} Battery ({duration} ms) ", curses.A_BOLD | color)
-
-        self.batteryWindow.addstr(1, 2, "• tension:")
-        self.batteryWindow.addstr(1, 17, f"{self.battery_card_msg.voltage:.2f}".rjust(8))
-        self.batteryWindow.addstr(1, 26, "V")
-        self.batteryWindow.addstr(2, 2, "• current:")
-        self.batteryWindow.addstr(2, 17, f"{self.battery_card_msg.current:.2f}".rjust(8))
-        self.batteryWindow.addstr(2, 26, "A")
+        self.batteryWindow.message_duration = self.duration_ms_from_times(self.battery_card_time)
+        if (self.batteryWindow.message_duration > self.duration_peremted):
+            self.batteryWindow.expired = True
+        self.batteryWindow.window.addstr(1, 2, "• tension:", curses.color_pair(255))
+        self.batteryWindow.window.addstr(1, 17, f"{self.battery_card_msg.voltage:.2f}".rjust(8), curses.color_pair(255))
+        self.batteryWindow.window.addstr(1, 26, "V", curses.color_pair(255))
+        self.batteryWindow.window.addstr(2, 2, "• current:", curses.color_pair(255))
+        self.batteryWindow.window.addstr(2, 17, f"{self.battery_card_msg.current:.2f}".rjust(8), curses.color_pair(255))
+        self.batteryWindow.window.addstr(2, 26, "A", curses.color_pair(255))
         self.batteryWindow.refresh()
 
     def imu_window(self):
-        marker = "✔"
-        color = curses.color_pair(3)
-        duration = self.duration_ms_from_times(self.imu_time)
-        if (duration > self.duration_peremted):
-            marker = "✘"
-            color = curses.color_pair(2)
-        self.imuWindow.addstr(0, 2, f" {marker} Imu ({self.duration_ms_from_times(self.imu_time)} ms) ", curses.A_BOLD | color)
+        self.imuWindow.message_duration = self.duration_ms_from_times(self.imu_time)
+        if (self.imuWindow.message_duration > self.duration_peremted):
+            self.imuWindow.expired = True
 
         angles = Rotation.from_quat([
             self.imu_msg.orientation.x,
@@ -197,39 +189,38 @@ class RiptideWTF(Node):
             self.imu_msg.orientation.w
         ]).as_euler('zyx')
 
-        self.imuWindow.addstr(1, 2, "• orientation:")
+        self.imuWindow.window.addstr(1, 2, "• orientation:", curses.color_pair(255))
+        self.imuWindow.window.addstr(2, 6, "phi:", curses.color_pair(255))
+        self.imuWindow.window.addstr(2, 17, f"{angles[0]*180/np.pi:.2f}".rjust(8), curses.color_pair(255))
+        self.imuWindow.window.addstr(2, 26, "°", curses.color_pair(255))
+        self.imuWindow.window.addstr(3, 6, "theta:", curses.color_pair(255))
+        self.imuWindow.window.addstr(3, 17, f"{angles[1]*180/np.pi:.2f}".rjust(8), curses.color_pair(255))
+        self.imuWindow.window.addstr(3, 26, "°", curses.color_pair(255))
+        self.imuWindow.window.addstr(4, 6, "psi:", curses.color_pair(255))
+        self.imuWindow.window.addstr(4, 17, f"{angles[2]*180/np.pi:.2f}".rjust(8), curses.color_pair(255))
+        self.imuWindow.window.addstr(4, 26, "°", curses.color_pair(255))
 
-        self.imuWindow.addstr(2, 6, "phi:")
-        self.imuWindow.addstr(2, 17, f"{angles[0]:.2f}".rjust(8))
-        self.imuWindow.addstr(2, 26, "rad")
-        self.imuWindow.addstr(3, 6, "theta:")
-        self.imuWindow.addstr(3, 17, f"{angles[1]:.2f}".rjust(8))
-        self.imuWindow.addstr(3, 26, "rad")
-        self.imuWindow.addstr(4, 6, "psi:")
-        self.imuWindow.addstr(4, 17, f"{angles[2]:.2f}".rjust(8))
-        self.imuWindow.addstr(4, 26, "rad")
+        self.imuWindow.window.addstr(5, 2, "• angular velocity:", curses.color_pair(255))
+        self.imuWindow.window.addstr(6, 6, "x:", curses.color_pair(255))
+        self.imuWindow.window.addstr(6, 17, f"{self.imu_msg.angular_velocity.x*180/np.pi:.2f}".rjust(8), curses.color_pair(255))
+        self.imuWindow.window.addstr(6, 26, "°/s", curses.color_pair(255))
+        self.imuWindow.window.addstr(7, 6, "y:", curses.color_pair(255))
+        self.imuWindow.window.addstr(7, 17, f"{self.imu_msg.angular_velocity.y*180/np.pi:.2f}".rjust(8), curses.color_pair(255))
+        self.imuWindow.window.addstr(7, 26, "°/s", curses.color_pair(255))
+        self.imuWindow.window.addstr(8, 6, "z:", curses.color_pair(255))
+        self.imuWindow.window.addstr(8, 17, f"{self.imu_msg.angular_velocity.z*180/np.pi:.2f}".rjust(8), curses.color_pair(255))
+        self.imuWindow.window.addstr(8, 26, "°/s", curses.color_pair(255))
 
-        self.imuWindow.addstr(5, 2, "• angular velocity:")
-        self.imuWindow.addstr(6, 6, "x:")
-        self.imuWindow.addstr(6, 17, f"{self.imu_msg.angular_velocity.x:.2f}".rjust(8))
-        self.imuWindow.addstr(6, 26, "rad/s")
-        self.imuWindow.addstr(7, 6, "y:")
-        self.imuWindow.addstr(7, 17, f"{self.imu_msg.angular_velocity.y:.2f}".rjust(8))
-        self.imuWindow.addstr(7, 26, "rad/s")
-        self.imuWindow.addstr(8, 6, "z:")
-        self.imuWindow.addstr(8, 17, f"{self.imu_msg.angular_velocity.z:.2f}".rjust(8))
-        self.imuWindow.addstr(8, 26, "rad/s")
-
-        self.imuWindow.addstr(9, 2, "• linear acceleration:")
-        self.imuWindow.addstr(10, 6, "x:")
-        self.imuWindow.addstr(10, 17, f"{self.imu_msg.linear_acceleration.x:.2f}".rjust(8))
-        self.imuWindow.addstr(10, 26, "m/s²")
-        self.imuWindow.addstr(11, 6, "y:")
-        self.imuWindow.addstr(11, 17, f"{self.imu_msg.linear_acceleration.y:.2f}".rjust(8))
-        self.imuWindow.addstr(11, 26, "m/s²")
-        self.imuWindow.addstr(12, 6, "z:")
-        self.imuWindow.addstr(12, 17, f"{self.imu_msg.linear_acceleration.z:.2f}".rjust(8))
-        self.imuWindow.addstr(12, 26, "m/s²")
+        self.imuWindow.window.addstr(9, 2, "• linear acceleration:", curses.color_pair(255))
+        self.imuWindow.window.addstr(10, 6, "x:", curses.color_pair(255))
+        self.imuWindow.window.addstr(10, 17, f"{self.imu_msg.linear_acceleration.x:.2f}".rjust(8), curses.color_pair(255))
+        self.imuWindow.window.addstr(10, 26, "m/s²", curses.color_pair(255))
+        self.imuWindow.window.addstr(11, 6, "y:", curses.color_pair(255))
+        self.imuWindow.window.addstr(11, 17, f"{self.imu_msg.linear_acceleration.y:.2f}".rjust(8), curses.color_pair(255))
+        self.imuWindow.window.addstr(11, 26, "m/s²", curses.color_pair(255))
+        self.imuWindow.window.addstr(12, 6, "z:", curses.color_pair(255))
+        self.imuWindow.window.addstr(12, 17, f"{self.imu_msg.linear_acceleration.z:.2f}".rjust(8), curses.color_pair(255))
+        self.imuWindow.window.addstr(12, 26, "m/s²", curses.color_pair(255))
         self.imuWindow.refresh()
 
     def duration_ms_from_times(self, t0):
@@ -237,9 +228,9 @@ class RiptideWTF(Node):
         t = t1.nanoseconds / 1e6 - t0.nanoseconds / 1e6
         return int(t)
 
-    def pressure_callback(self, msg):
-        self.pressure_msg = msg
-        self.pressure_time = msg.header.stamp
+    def barometer_callback(self, msg):
+        self.barometer_msg = msg
+        self.barometer_time = msg.header.stamp
 
     def battery_card_callback(self, msg):
         self.battery_card_msg = msg
@@ -253,6 +244,18 @@ class RiptideWTF(Node):
         self.imu_msg = msg
         self.imu_time = msg.header.stamp
 
+    def keyboard_press(self, key):
+        if key == keyboard.Key.esc:
+            self.sigint_handler()
+        elif key == keyboard.Key.tab:
+            self.current_tab = (self.current_tab + 1) % 2
+            self.stdscr.clear()
+            self.stdscr.refresh()
+        else:
+            return True
+
+    def keyboard_release(self, key):
+        pass
 
 def main(args=None):
     rclpy.init(args=args)
