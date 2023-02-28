@@ -48,20 +48,28 @@ class RiptideWTF(Node):
 
         self.listener = keyboard.Listener(
             on_press=self.keyboard_press,
-            on_release=self.keyboard_release
+            on_release=self.keyboard_release,
+            suppress=True
         )
         self.listener.start()
 
+        self.previous_tab = 0
         self.current_tab = 0
 
     def sigint_handler(self, sig=None, frame=None):
         self.listener.stop()
         rclpy.shutdown()
+        curses.nocbreak()
+        curses.echo()
         curses.endwin()
         os.system('clear')
         sys.exit(0)
 
     def timer_callback(self):
+        if self.previous_tab != self.current_tab:
+            self.previous_tab = self.current_tab
+            self.stdscr.clear()
+            self.stdscr.refresh()
         self.menu_window()
         if self.current_tab == 0:
             self.host_window()
@@ -135,7 +143,7 @@ class RiptideWTF(Node):
 
         self.barometerWindow.window.addstr(1, 2, "• pressure:", curses.color_pair(255))
         self.barometerWindow.window.addstr(1, 17, f"{self.barometer_msg.pressure:.2f}".rjust(8), curses.color_pair(255))
-        self.barometerWindow.window.addstr(1, 26, "mbar", curses.color_pair(255))
+        self.barometerWindow.window.addstr(1, 26, "㍱", curses.color_pair(255))
         self.barometerWindow.window.addstr(2, 2, "• temperature:", curses.color_pair(255))
         self.barometerWindow.window.addstr(2, 17, f"{self.barometer_msg.temperature:.2f}".rjust(8), curses.color_pair(255))
         self.barometerWindow.window.addstr(2, 26, "°C", curses.color_pair(255))
@@ -155,14 +163,14 @@ class RiptideWTF(Node):
         self.actuatorsWindow.window.addstr(1, 17, f"{self.actuators_msg.thruster:.2f}".rjust(8), curses.color_pair(255))
         self.actuatorsWindow.window.addstr(1, 26, "usi", curses.color_pair(255))
         self.actuatorsWindow.window.addstr(2, 2, "• d fin:", curses.color_pair(255))
-        self.actuatorsWindow.window.addstr(2, 17, f"{self.actuators_msg.d_fin*180/np.pi:.2f}".rjust(8), curses.color_pair(255))
-        self.actuatorsWindow.window.addstr(2, 26, "°", curses.color_pair(255))
+        self.actuatorsWindow.window.addstr(2, 17, f"{self.actuators_msg.d_fin:.2f}".rjust(8), curses.color_pair(255))
+        self.actuatorsWindow.window.addstr(2, 26, "㎭", curses.color_pair(255))
         self.actuatorsWindow.window.addstr(3, 2, "• p fin:", curses.color_pair(255))
-        self.actuatorsWindow.window.addstr(3, 17, f"{self.actuators_msg.p_fin*180/np.pi:.2f}".rjust(8), curses.color_pair(255))
-        self.actuatorsWindow.window.addstr(3, 26, "°", curses.color_pair(255))
+        self.actuatorsWindow.window.addstr(3, 17, f"{self.actuators_msg.p_fin:.2f}".rjust(8), curses.color_pair(255))
+        self.actuatorsWindow.window.addstr(3, 26, "㎭", curses.color_pair(255))
         self.actuatorsWindow.window.addstr(4, 2, "• s fin:", curses.color_pair(255))
-        self.actuatorsWindow.window.addstr(4, 17, f"{self.actuators_msg.s_fin*180/np.pi:.2f}".rjust(8), curses.color_pair(255))
-        self.actuatorsWindow.window.addstr(4, 26, "°", curses.color_pair(255))
+        self.actuatorsWindow.window.addstr(4, 17, f"{self.actuators_msg.s_fin:.2f}".rjust(8), curses.color_pair(255))
+        self.actuatorsWindow.window.addstr(4, 26, "㎭", curses.color_pair(255))
         self.actuatorsWindow.refresh()
 
     def battery_window(self):
@@ -191,36 +199,36 @@ class RiptideWTF(Node):
 
         self.imuWindow.window.addstr(1, 2, "• orientation:", curses.color_pair(255))
         self.imuWindow.window.addstr(2, 6, "phi:", curses.color_pair(255))
-        self.imuWindow.window.addstr(2, 17, f"{angles[0]*180/np.pi:.2f}".rjust(8), curses.color_pair(255))
-        self.imuWindow.window.addstr(2, 26, "°", curses.color_pair(255))
+        self.imuWindow.window.addstr(2, 17, f"{angles[0]:.2f}".rjust(8), curses.color_pair(255))
+        self.imuWindow.window.addstr(2, 26, "㎭", curses.color_pair(255))
         self.imuWindow.window.addstr(3, 6, "theta:", curses.color_pair(255))
-        self.imuWindow.window.addstr(3, 17, f"{angles[1]*180/np.pi:.2f}".rjust(8), curses.color_pair(255))
-        self.imuWindow.window.addstr(3, 26, "°", curses.color_pair(255))
+        self.imuWindow.window.addstr(3, 17, f"{angles[1]:.2f}".rjust(8), curses.color_pair(255))
+        self.imuWindow.window.addstr(3, 26, "㎭", curses.color_pair(255))
         self.imuWindow.window.addstr(4, 6, "psi:", curses.color_pair(255))
-        self.imuWindow.window.addstr(4, 17, f"{angles[2]*180/np.pi:.2f}".rjust(8), curses.color_pair(255))
-        self.imuWindow.window.addstr(4, 26, "°", curses.color_pair(255))
+        self.imuWindow.window.addstr(4, 17, f"{angles[2]:.2f}".rjust(8), curses.color_pair(255))
+        self.imuWindow.window.addstr(4, 26, "㎭", curses.color_pair(255))
 
         self.imuWindow.window.addstr(5, 2, "• angular velocity:", curses.color_pair(255))
         self.imuWindow.window.addstr(6, 6, "x:", curses.color_pair(255))
-        self.imuWindow.window.addstr(6, 17, f"{self.imu_msg.angular_velocity.x*180/np.pi:.2f}".rjust(8), curses.color_pair(255))
-        self.imuWindow.window.addstr(6, 26, "°/s", curses.color_pair(255))
+        self.imuWindow.window.addstr(6, 17, f"{self.imu_msg.angular_velocity.x:.2f}".rjust(8), curses.color_pair(255))
+        self.imuWindow.window.addstr(6, 26, "㎮", curses.color_pair(255))
         self.imuWindow.window.addstr(7, 6, "y:", curses.color_pair(255))
-        self.imuWindow.window.addstr(7, 17, f"{self.imu_msg.angular_velocity.y*180/np.pi:.2f}".rjust(8), curses.color_pair(255))
-        self.imuWindow.window.addstr(7, 26, "°/s", curses.color_pair(255))
+        self.imuWindow.window.addstr(7, 17, f"{self.imu_msg.angular_velocity.y:.2f}".rjust(8), curses.color_pair(255))
+        self.imuWindow.window.addstr(7, 26, "㎮", curses.color_pair(255))
         self.imuWindow.window.addstr(8, 6, "z:", curses.color_pair(255))
-        self.imuWindow.window.addstr(8, 17, f"{self.imu_msg.angular_velocity.z*180/np.pi:.2f}".rjust(8), curses.color_pair(255))
-        self.imuWindow.window.addstr(8, 26, "°/s", curses.color_pair(255))
+        self.imuWindow.window.addstr(8, 17, f"{self.imu_msg.angular_velocity.z:.2f}".rjust(8), curses.color_pair(255))
+        self.imuWindow.window.addstr(8, 26, "㎮", curses.color_pair(255))
 
         self.imuWindow.window.addstr(9, 2, "• linear acceleration:", curses.color_pair(255))
         self.imuWindow.window.addstr(10, 6, "x:", curses.color_pair(255))
         self.imuWindow.window.addstr(10, 17, f"{self.imu_msg.linear_acceleration.x:.2f}".rjust(8), curses.color_pair(255))
-        self.imuWindow.window.addstr(10, 26, "m/s²", curses.color_pair(255))
+        self.imuWindow.window.addstr(10, 26, "㎨", curses.color_pair(255))
         self.imuWindow.window.addstr(11, 6, "y:", curses.color_pair(255))
         self.imuWindow.window.addstr(11, 17, f"{self.imu_msg.linear_acceleration.y:.2f}".rjust(8), curses.color_pair(255))
-        self.imuWindow.window.addstr(11, 26, "m/s²", curses.color_pair(255))
+        self.imuWindow.window.addstr(11, 26, "㎨", curses.color_pair(255))
         self.imuWindow.window.addstr(12, 6, "z:", curses.color_pair(255))
         self.imuWindow.window.addstr(12, 17, f"{self.imu_msg.linear_acceleration.z:.2f}".rjust(8), curses.color_pair(255))
-        self.imuWindow.window.addstr(12, 26, "m/s²", curses.color_pair(255))
+        self.imuWindow.window.addstr(12, 26, "㎨", curses.color_pair(255))
         self.imuWindow.refresh()
 
     def duration_ms_from_times(self, t0):
@@ -249,8 +257,6 @@ class RiptideWTF(Node):
             self.sigint_handler()
         elif key == keyboard.Key.tab:
             self.current_tab = (self.current_tab + 1) % 2
-            self.stdscr.clear()
-            self.stdscr.refresh()
         else:
             return True
 
