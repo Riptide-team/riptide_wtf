@@ -90,13 +90,13 @@ class RiptideWTF(Node):
         for i in range(0, curses.COLORS):
             curses.init_pair(i + 1, i, -1)
 
-        self.menuWindow = InfoWindow("Menu", 3, 65, 1, 1)
-        self.hostWindow = InfoWindow("Host", 3, 32, 1, 4)
-        self.batteryWindow = TimedWindow("Battery", 4, 32, 1, 7)
-        self.barometerWindow = TimedWindow("Barometer", 6, 32, 1, 11)
-        self.actuatorsWindow = TimedWindow("Actuators", 6, 32, 1, 17)
-        self.daemonWindow = StatusWindow("Daemon", 3, 32, 34, 4)
-        self.imuWindow = TimedWindow("Imu", 14, 32, 34, 7)
+        self.menuWindow = InfoWindow("Menu", 3, 61, 1, 1)
+        self.hostWindow = InfoWindow("Host", 3, 30, 1, 4)
+        self.batteryWindow = TimedWindow("Battery", 4, 30, 1, 7)
+        self.barometerWindow = TimedWindow("Barometer", 6, 30, 1, 11)
+        self.actuatorsWindow = TimedWindow("Actuators", 6, 30, 1, 17)
+        self.daemonWindow = StatusWindow("Daemon", 3, 30, 32, 4)
+        self.imuWindow = TimedWindow("Imu", 14, 30, 32, 7)
 
     def host_window(self):
         self.hostWindow.window.addstr(1, 4, f"{os.uname()[1]}", curses.color_pair(255))
@@ -109,11 +109,11 @@ class RiptideWTF(Node):
         color = curses.color_pair(5)
         highlight_color = curses.A_REVERSE | curses.color_pair(5)
         if (self.current_tab == 0):
-            self.menuWindow.window.addstr(1, 43, "⒈ Sensors", highlight_color)
-            self.menuWindow.window.addstr(1, 53, "⒉ Launcher", color)
+            self.menuWindow.window.addstr(1, 39, "⒈ Sensors", highlight_color)
+            self.menuWindow.window.addstr(1, 49, "⒉ Launcher", color)
         else:
-            self.menuWindow.window.addstr(1, 43, "⒈ Sensors", color)
-            self.menuWindow.window.addstr(1, 53, "⒉ Launcher", highlight_color)
+            self.menuWindow.window.addstr(1, 39, "⒈ Sensors", color)
+            self.menuWindow.window.addstr(1, 49, "⒉ Launcher", highlight_color)
         self.menuWindow.refresh()
     
     def daemon_window(self):
@@ -133,7 +133,7 @@ class RiptideWTF(Node):
         color = curses.color_pair(3)
         if (status!="active"):
             color = curses.color_pair(2)
-        self.daemonWindow.window.addstr(1, 3, f"• Ros2Control ({status})".ljust(28), color)
+        self.daemonWindow.window.addstr(1, 2, f"• Ros2Control ({status})".ljust(28), color)
         self.daemonWindow.refresh()
 
     def barometer_window(self):
