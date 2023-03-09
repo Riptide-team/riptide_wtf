@@ -6,6 +6,8 @@ from rclpy.node import Node
 from riptide_msgs.msg import Pressure, Actuators
 from sensor_msgs.msg import Imu, BatteryState
 
+from lifecycle_msgs.msg import TransitionEvent
+
 import curses
 import dbus
 import os
@@ -16,7 +18,7 @@ from pynput import keyboard
 import numpy as np
 from scipy.spatial.transform import Rotation
 
-from Window import InfoWindow, StatusWindow, TimedWindow
+from Window import InfoWindow, StatusWindow, TimedWindow, RCWindow
 
 class RiptideWTF(Node):
 
@@ -42,6 +44,10 @@ class RiptideWTF(Node):
 
         timer_period = 0.1  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
+
+        # To be requested at startup
+        self.riptide_recorder_state = "unconfigured"
+        self.riptide_recorder_state_subscriber = self.create_subscription(TransitionEvent, '/riptide_recorder/transition_event', self.riptide_recorder_state_callback, 10)
 
         self.init_ncurses()
         signal.signal(signal.SIGINT, self.sigint_handler)
@@ -78,6 +84,7 @@ class RiptideWTF(Node):
             self.battery_window()
             self.imu_window()
             self.actuators_window()
+            self.rcWindow.refresh()
 
     def init_ncurses(self):
         self.stdscr = curses.initscr()
@@ -95,8 +102,10 @@ class RiptideWTF(Node):
         self.batteryWindow = TimedWindow("Battery", 4, 30, 1, 7)
         self.barometerWindow = TimedWindow("Barometer", 6, 30, 1, 11)
         self.actuatorsWindow = TimedWindow("Actuators", 6, 30, 1, 17)
-        self.daemonWindow = StatusWindow("Daemon", 3, 30, 32, 4)
-        self.imuWindow = TimedWindow("Imu", 14, 30, 32, 7)
+        self.daemonWindow = StatusWindow("Daemon", 4, 30, 32, 4)
+        self.imuWindow = TimedWindow("Imu", 14, 30, 32, 8)
+
+        self.rcWindow = RCWindow(1, 23)
 
     def host_window(self):
         self.hostWindow.window.addstr(1, 4, f"{os.uname()[1]}", curses.color_pair(255))
@@ -134,6 +143,7 @@ class RiptideWTF(Node):
         if (status!="active"):
             color = curses.color_pair(2)
         self.daemonWindow.window.addstr(1, 2, f"• Ros2Control ({status})".ljust(28), color)
+        self.daemonWindow.window.addstr(2, 2, f"• Riptide Recorder ({self.riptide_recorder_state})".ljust(28), color)
         self.daemonWindow.refresh()
 
     def barometer_window(self):
@@ -262,6 +272,9 @@ class RiptideWTF(Node):
 
     def keyboard_release(self, key):
         pass
+
+    def riptide_recorder_state_callback(self, msg):
+        self.riptide_recorder_state = msg.goal_state.label
 
 def main(args=None):
     rclpy.init(args=args)

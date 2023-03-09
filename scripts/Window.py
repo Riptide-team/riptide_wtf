@@ -1,6 +1,11 @@
 import curses
 from abc import ABC, abstractmethod
 
+from sensor_msgs.msg import Joy
+
+import numpy as np
+import time as time
+
 curses.initscr()
 curses.start_color()
 
@@ -16,6 +21,7 @@ class Window(ABC):
     def refresh(self):
         self.set_window()
         self.set_title()
+        self.set_content()
         self.window.refresh()
 
     def set_window(self):
@@ -26,6 +32,10 @@ class Window(ABC):
     def set_title(self):
         pass
 
+    @abstractmethod
+    def set_content(self):
+        pass
+
 
 class InfoWindow(Window):
     def __init__(self, title, h, w, x, y, base_color=curses.color_pair(242)):
@@ -34,6 +44,9 @@ class InfoWindow(Window):
     def set_title(self):
         self.title_color = curses.color_pair(5)
         self.window.addstr(0, 1, f" • {self.title} ", curses.A_BOLD | self.title_color)
+    
+    def set_content(self):
+        pass
 
 class StatusWindow(Window):
     def __init__(self, title, h, w, x, y, base_color=curses.color_pair(242)):
@@ -49,6 +62,9 @@ class StatusWindow(Window):
             marker = "✘"
             self.title_color = curses.color_pair(2)
         self.window.addstr(0, 1, f" {marker} {self.title} ", curses.A_BOLD | self.title_color)
+    
+    def set_content(self):
+        pass
 
 class TimedWindow(Window):
     def __init__(self, title, h, w, x, y, base_color=curses.color_pair(242)):
@@ -65,3 +81,24 @@ class TimedWindow(Window):
             marker = "✔"
             self.title_color = curses.color_pair(3)
         self.window.addstr(0, 1, f" {marker} {self.title} ({self.message_duration} ms) ", curses.A_BOLD | self.title_color)
+
+    def set_content(self):
+        pass
+
+class RCWindow(TimedWindow):
+    def __init__(self, x, y, base_color=curses.color_pair(242)):
+        self.msg = Joy()
+        self.msg.axes = [-1., -0.5, 0., 0.5, 0.75, 1.]
+        super().__init__("RC", 8, 30, x, y, base_color)
+
+    def set_content(self):
+        def octal(x):
+            return [int(s) for s in f"{int(40*(value+1)):03o}"]
+        
+        self.msg.axes[0] = np.sin(time.time())
+        for i, value in enumerate(self.msg.axes):
+            self.window.addstr(i+1, 2, f"• CH{i+1}: {value: 3.2f}", curses.color_pair(255))
+            o = octal(value)
+            bar = ("\u2595" + (8 * o[0] + o[1]) * "\u2588" + eval(r"u'\u258%x'" % (15-o[2]))).ljust(12)
+            bar = bar[:-1] + "\u258F"
+            self.window.addstr(i+1, 17, bar, curses.color_pair(255))
