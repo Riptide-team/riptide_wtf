@@ -13,7 +13,7 @@ import dbus
 import os
 import signal
 import sys
-from pynput import keyboard
+# from pynput import keyboard
 
 import numpy as np
 from scipy.spatial.transform import Rotation
@@ -46,24 +46,24 @@ class RiptideWTF(Node):
         self.timer = self.create_timer(timer_period, self.timer_callback)
 
         # To be requested at startup
-        self.riptide_recorder_state = "unconfigured"
-        self.riptide_recorder_state_subscriber = self.create_subscription(TransitionEvent, '/riptide_recorder/transition_event', self.riptide_recorder_state_callback, 10)
+        # self.riptide_recorder_state = "unconfigured"
+        # self.riptide_recorder_state_subscriber = self.create_subscription(TransitionEvent, '/riptide_recorder/transition_event', self.riptide_recorder_state_callback, 10)
 
         self.init_ncurses()
         signal.signal(signal.SIGINT, self.sigint_handler)
 
-        self.listener = keyboard.Listener(
-            on_press=self.keyboard_press,
-            on_release=self.keyboard_release,
-            suppress=True
-        )
-        self.listener.start()
+        # self.listener = keyboard.Listener(
+        #     on_press=self.keyboard_press,
+        #     on_release=self.keyboard_release,
+        #     suppress=True
+        # )
+        # self.listener.start()
 
         self.previous_tab = 0
         self.current_tab = 0
 
     def sigint_handler(self, sig=None, frame=None):
-        self.listener.stop()
+        # self.listener.stop()
         rclpy.shutdown()
         curses.nocbreak()
         curses.echo()
@@ -76,7 +76,7 @@ class RiptideWTF(Node):
             self.previous_tab = self.current_tab
             self.stdscr.clear()
             self.stdscr.refresh()
-        self.menu_window()
+        # self.menu_window()
         if self.current_tab == 0:
             self.host_window()
             self.daemon_window()
@@ -97,15 +97,16 @@ class RiptideWTF(Node):
         for i in range(0, curses.COLORS):
             curses.init_pair(i + 1, i, -1)
 
-        self.menuWindow = InfoWindow("Menu", 3, 61, 1, 1)
-        self.hostWindow = InfoWindow("Host", 3, 30, 1, 4)
-        self.batteryWindow = TimedWindow("Battery", 4, 30, 1, 7)
-        self.barometerWindow = TimedWindow("Barometer", 6, 30, 1, 11)
-        self.actuatorsWindow = TimedWindow("Actuators", 6, 30, 1, 17)
-        self.daemonWindow = StatusWindow("Daemon", 4, 30, 32, 4)
-        self.imuWindow = TimedWindow("Imu", 14, 30, 32, 8)
+        # self.menuWindow = InfoWindow("Menu", 3, 61, 1, 1)
+        self.hostWindow = InfoWindow("Host", 3, 30, 1, 1)
+        self.batteryWindow = TimedWindow("Battery", 4, 30, 1, 4)
+        self.actuatorsWindow = TimedWindow("Actuators", 6, 30, 1, 8)
+        self.rcWindow = RCWindow(1, 14)
 
-        self.rcWindow = RCWindow(1, 23)
+        self.daemonWindow = StatusWindow("Daemon", 3, 30, 32, 1)
+        self.barometerWindow = TimedWindow("Barometer", 6, 30, 32, 4)
+        self.imuWindow = TimedWindow("Imu", 14, 30, 32, 10)
+
 
     def host_window(self):
         self.hostWindow.window.addstr(1, 4, f"{os.uname()[1]}", curses.color_pair(255))
@@ -143,7 +144,7 @@ class RiptideWTF(Node):
         if (status!="active"):
             color = curses.color_pair(2)
         self.daemonWindow.window.addstr(1, 2, f"• Ros2Control ({status})".ljust(28), color)
-        self.daemonWindow.window.addstr(2, 2, f"• Riptide Recorder ({self.riptide_recorder_state})".ljust(28), color)
+        # self.daemonWindow.window.addstr(2, 2, f"• Riptide Recorder ({self.riptide_recorder_state})".ljust(28), color)
         self.daemonWindow.refresh()
 
     def barometer_window(self):
@@ -262,25 +263,33 @@ class RiptideWTF(Node):
         self.imu_msg = msg
         self.imu_time = msg.header.stamp
 
-    def keyboard_press(self, key):
-        if key == keyboard.Key.esc:
-            self.sigint_handler()
-        elif key == keyboard.Key.tab:
-            self.current_tab = (self.current_tab + 1) % 2
-        else:
-            return True
+    # def keyboard_press(self, key):
+    #     if key == keyboard.Key.esc:
+    #         self.sigint_handler()
+    #     elif key == keyboard.Key.tab:
+    #         self.current_tab = (self.current_tab + 1) % 2
+    #     else:
+    #         return True
 
-    def keyboard_release(self, key):
-        pass
+    # def keyboard_release(self, key):
+    #     pass
 
-    def riptide_recorder_state_callback(self, msg):
-        self.riptide_recorder_state = msg.goal_state.label
+    # def riptide_recorder_state_callback(self, msg):
+    #     self.riptide_recorder_state = msg.goal_state.label
+
+def sigint_handler():
+    rclpy.shutdown()
+    curses.nocbreak()
+    curses.echo()
+    curses.endwin()
+    os.system('clear')
+    sys.exit(0)
 
 def main(args=None):
     rclpy.init(args=args)
     riptide_wtf = RiptideWTF()
     rclpy.spin(riptide_wtf)
 
-
 if __name__ == '__main__':
+    # signal.signal(signal.SIGINT, sigint_handler)
     main()
