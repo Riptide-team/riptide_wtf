@@ -64,7 +64,7 @@ class RiptideWTF(Node):
 
     def sigint_handler(self, sig=None, frame=None):
         # self.listener.stop()
-        rclpy.shutdown()
+        # rclpy.shutdown()
         curses.nocbreak()
         curses.echo()
         curses.endwin()
@@ -278,7 +278,6 @@ class RiptideWTF(Node):
     #     self.riptide_recorder_state = msg.goal_state.label
 
 def sigint_handler():
-    rclpy.shutdown()
     curses.nocbreak()
     curses.echo()
     curses.endwin()
