@@ -42,7 +42,7 @@ class RiptideWTF(Node):
         self.actuators_time = self.get_clock().now()
         self.imu_time = self.get_clock().now()
 
-        timer_period = 0.1  # seconds
+        timer_period = 1.0  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
 
         # To be requested at startup
