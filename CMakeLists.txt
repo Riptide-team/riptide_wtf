@@ -16,33 +16,33 @@ find_package(rosbag2_cpp REQUIRED)
 find_package(rosbag2_transport REQUIRED)
 
 ### Executable
-add_executable(riptide_recorder src/riptide_recorder.cpp)
-include_directories(${CURSES_INCLUDE_DIR})
-ament_target_dependencies(riptide_recorder
-  "lifecycle_msgs"
-  "rclcpp_lifecycle"
-  "std_msgs"
-  "std_srvs"
-  "rosbag2_cpp"
-  "rosbag2_transport"
-)
+# add_executable(riptide_recorder src/riptide_recorder.cpp)
+# include_directories(${CURSES_INCLUDE_DIR})
+# ament_target_dependencies(riptide_recorder
+#   "lifecycle_msgs"
+#   "rclcpp_lifecycle"
+#   "std_msgs"
+#   "std_srvs"
+#   "rosbag2_cpp"
+#   "rosbag2_transport"
+# )
 
 ### Includes
-target_include_directories(riptide_recorder PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include>)
+# target_include_directories(riptide_recorder PUBLIC
+#         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+#         $<INSTALL_INTERFACE:include>)
 
 ### Test
-if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  find_package(ament_cmake_gtest REQUIRED)
-  ament_lint_auto_find_test_dependencies()
+# if(BUILD_TESTING)
+#   find_package(ament_lint_auto REQUIRED)
+#   find_package(ament_cmake_gtest REQUIRED)
+#   ament_lint_auto_find_test_dependencies()
 
-endif()
+# endif()
 
 ### Install
-install(TARGETS riptide_recorder
-        DESTINATION lib/${PROJECT_NAME})
+# install(TARGETS riptide_recorder
+#         DESTINATION lib/${PROJECT_NAME})
 
 # Install Python executables
 install(PROGRAMS
