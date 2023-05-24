@@ -22,7 +22,7 @@ class QuaternionToEuler(Node):
             msg.orientation.w
         ]).as_euler('zyx', degrees=True)
 
-        self.get_logger().info(f"Final depth: {angles}")
+        self.get_logger().info(f"Angles {angles}")
 
 
 def main(args=None):
