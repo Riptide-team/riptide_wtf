@@ -47,7 +47,7 @@ find_package(rosbag2_transport REQUIRED)
 # Install Python executables
 install(PROGRAMS
   scripts/riptide_wtf.py
-  scripts/riptide_recorder.py
+  # scripts/riptide_recorder.py
   scripts/quaternion_to_euler.py
   DESTINATION lib/${PROJECT_NAME}
 )
