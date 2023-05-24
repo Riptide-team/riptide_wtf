@@ -8,25 +8,27 @@ endif()
 ### find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(Curses REQUIRED)
-find_package(riptide_msgs REQUIRED)
+find_package(rclcpp_lifecycle REQUIRED)
+find_package(lifecycle_msgs REQUIRED)
+find_package(rosbag2_cpp REQUIRED)
+find_package(rosbag2_transport REQUIRED)
 
 ### Executable
-add_executable(wtf_node src/wtf_node.cpp)
+add_executable(riptide_recorder src/riptide_recorder.cpp)
 include_directories(${CURSES_INCLUDE_DIR})
-ament_target_dependencies(wtf_node
-        rclcpp
-        rosidl_default_generators
-        std_srvs
-        riptide_msgs
-        )
-target_link_libraries(wtf_node "${cpp_typesupport_target}" ${CURSES_LIBRARIES})
+ament_target_dependencies(riptide_recorder
+  "lifecycle_msgs"
+  "rclcpp_lifecycle"
+  "std_msgs"
+  "std_srvs"
+  "rosbag2_cpp"
+  "rosbag2_transport"
+)
 
 ### Includes
-target_include_directories(wtf_node PUBLIC
+target_include_directories(riptide_recorder PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>)
 
@@ -39,12 +41,14 @@ if(BUILD_TESTING)
 endif()
 
 ### Install
-install(TARGETS wtf_node
+install(TARGETS riptide_recorder
         DESTINATION lib/${PROJECT_NAME})
 
 # Install Python executables
 install(PROGRAMS
   scripts/riptide_wtf.py
+  scripts/riptide_recorder.py
+  scripts/quaternion_to_euler.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
