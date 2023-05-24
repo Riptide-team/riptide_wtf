@@ -16,10 +16,10 @@ class QuaternionToEuler(Node):
 
     def imu_callback(self, msg):
         angles = Rotation.from_quat([
+            msg.orientation.w,
             msg.orientation.x,
             msg.orientation.y,
-            msg.orientation.z,
-            msg.orientation.w
+            msg.orientation.z
         ]).as_euler('zyx', degrees=True)
 
         self.get_logger().info(f"Angles {angles}")
