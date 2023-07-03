@@ -4,7 +4,7 @@ import rclpy
 from rclpy.time import Time
 from rclpy.node import Node
 from riptide_msgs.msg import Pressure, Actuators
-from sensor_msgs.msg import Imu, BatteryState
+from sensor_msgs.msg import Imu, BatteryState, Joy
 
 from lifecycle_msgs.msg import TransitionEvent
 
@@ -29,12 +29,14 @@ class RiptideWTF(Node):
         
         self.barometer_subscription = self.create_subscription(Pressure, '/riptide_1/pressure_broadcaster/pressure_status', self.barometer_callback, 10)
         self.battery_card_subscription = self.create_subscription(BatteryState, '/riptide_1/battery_card_broadcaster/battery_status', self.battery_card_callback, 10)
-        self.actuators_subscription = self.create_subscription(Actuators, '/riptide_1/actuators_broadcaster/actuators_status', self.actuators_callback, 10)
+        self.actuators_subscription = self.create_subscription(Actuators, '/riptide_1/tail_broadcaster/actuators_status', self.actuators_callback, 10)
+        self.rc_subscription = self.create_subscription(Actuators, '/riptide_1/tail_broadcaster/rc_status', self.rc_callback, 10)
         self.imu_subscription = self.create_subscription(Imu, '/riptide_1/imu_broadcaster/imu_status', self.imu_callback, 10)
 
         self.barometer_msg = Pressure()
         self.battery_card_msg = BatteryState()
         self.actuators_msg = Actuators()
+        self.rc_msg = Joy()
         self.imu_msg = Imu()
 
         self.barometer_time = self.get_clock().now()
@@ -84,6 +86,7 @@ class RiptideWTF(Node):
             self.battery_window()
             self.imu_window()
             self.actuators_window()
+            self.rcWindow.axes = self.rc_msg.axes
             self.rcWindow.refresh()
 
     def init_ncurses(self):
@@ -258,6 +261,10 @@ class RiptideWTF(Node):
     def actuators_callback(self, msg):
         self.actuators_msg = msg
         self.actuators_time = Time.from_msg(msg.header.stamp)
+
+    def rc_callback(self, msg):
+        self.rc_msg = msg
+        self.rc_time = Time.from_msg(msg.header.stamp)
 
     def imu_callback(self, msg):
         self.imu_msg = msg
