@@ -249,7 +249,8 @@ class RiptideWTF(Node):
         self.rcWindow.message_duration = self.duration_ms_from_times(self.rc_time)
         if (self.rcWindow.message_duration > self.duration_peremted):
             self.rcWindow.expired = True
-        self.rcWindow.axes = self.rc_msg.axes
+        for i,v in enumerate(self.rc_msg.axes):
+            self.rcWindow.axes[i] = v
         self.rcWindow.refresh()
 
     def duration_ms_from_times(self, t0):
