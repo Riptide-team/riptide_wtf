@@ -88,7 +88,6 @@ class TimedWindow(Window):
 class RCWindow(TimedWindow):
     def __init__(self, x, y, base_color=curses.color_pair(242)):
         self.msg = Joy()
-        self.msg.axes = [0., 0., 0., 0., 0., 0.]
         super().__init__("RC", 8, 30, x, y, base_color)
 
     def set_content(self):
