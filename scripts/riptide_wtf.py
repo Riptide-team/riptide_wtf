@@ -249,19 +249,19 @@ class RiptideWTF(Node):
 
     def barometer_callback(self, msg):
         self.barometer_msg = msg
-        self.barometer_time = Time(msg.header.stamp)
+        self.barometer_time = Time.from_msg(msg.header.stamp)
 
     def battery_card_callback(self, msg):
         self.battery_card_msg = msg
-        self.battery_card_time = Time(msg.header.stamp)
+        self.battery_card_time = Time.from_msg(msg.header.stamp)
 
     def actuators_callback(self, msg):
         self.actuators_msg = msg
-        self.actuators_time = Time(msg.header.stamp)
+        self.actuators_time = Time.from_msg(msg.header.stamp)
 
     def imu_callback(self, msg):
         self.imu_msg = msg
-        self.imu_time = Time(msg.header.stamp)
+        self.imu_time = Time.from_msg(msg.header.stamp)
 
     # def keyboard_press(self, key):
     #     if key == keyboard.Key.esc:
