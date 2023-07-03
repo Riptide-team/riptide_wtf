@@ -86,8 +86,7 @@ class RiptideWTF(Node):
             self.battery_window()
             self.imu_window()
             self.actuators_window()
-            self.rcWindow.axes = self.rc_msg.axes
-            self.rcWindow.refresh()
+            self.rc_window()
 
     def init_ncurses(self):
         self.stdscr = curses.initscr()
@@ -244,6 +243,13 @@ class RiptideWTF(Node):
         self.imuWindow.window.addstr(12, 17, f"{self.imu_msg.linear_acceleration.z:.2f}".rjust(8), curses.color_pair(255))
         self.imuWindow.window.addstr(12, 26, "㎨", curses.color_pair(255))
         self.imuWindow.refresh()
+
+    def rc_window(self):
+        self.rcWindow.message_duration = self.duration_ms_from_times(self.rc_time)
+        if (self.rcWindow.message_duration > self.duration_peremted):
+            self.rcWindow.expired = True
+        self.rcWindow.axes = self.rc_msg.axes
+        self.rcWindow.refresh()
 
     def duration_ms_from_times(self, t0):
         t1 = self.get_clock().now()

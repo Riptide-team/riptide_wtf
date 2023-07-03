@@ -88,14 +88,13 @@ class TimedWindow(Window):
 class RCWindow(TimedWindow):
     def __init__(self, x, y, base_color=curses.color_pair(242)):
         self.msg = Joy()
-        self.msg.axes = [-1., -0.5, 0., 0.5, 0.75, 1.]
+        self.msg.axes = [0., 0., 0., 0., 0., 0.]
         super().__init__("RC", 8, 30, x, y, base_color)
 
     def set_content(self):
         def octal(x):
             return [int(s) for s in f"{int(40*(value+1)):03o}"]
         
-        self.msg.axes[0] = np.sin(time.time())
         for i, value in enumerate(self.msg.axes):
             self.window.addstr(i+1, 2, f"• CH{i+1}: {value: 3.2f}", curses.color_pair(255))
             o = octal(value)
