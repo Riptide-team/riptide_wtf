@@ -42,6 +42,7 @@ class RiptideWTF(Node):
         self.barometer_time = self.get_clock().now()
         self.battery_card_time = self.get_clock().now()
         self.actuators_time = self.get_clock().now()
+        self.rc_time = self.get_clock().now()
         self.imu_time = self.get_clock().now()
 
         timer_period = 1.0  # seconds
