@@ -27,11 +27,11 @@ class RiptideWTF(Node):
 
         self.duration_peremted = 10000
         
-        self.barometer_subscription = self.create_subscription(Pressure, '/riptide_1/pressure_broadcaster/pressure_status', self.barometer_callback, 10)
-        self.battery_card_subscription = self.create_subscription(BatteryState, '/riptide_1/battery_card_broadcaster/battery_status', self.battery_card_callback, 10)
-        self.actuators_subscription = self.create_subscription(Actuators, '/riptide_1/tail_broadcaster/actuators_status', self.actuators_callback, 10)
-        self.rc_subscription = self.create_subscription(Joy, '/riptide_1/tail_broadcaster/rc_status', self.rc_callback, 10)
-        self.imu_subscription = self.create_subscription(Imu, '/riptide_1/imu_broadcaster/imu_status', self.imu_callback, 10)
+        self.barometer_subscription = self.create_subscription(Pressure, '/pressure_broadcaster/pressure_status', self.barometer_callback, 10)
+        self.battery_card_subscription = self.create_subscription(BatteryState, '/battery_card_broadcaster/battery_status', self.battery_card_callback, 10)
+        self.actuators_subscription = self.create_subscription(Actuators, '/tail_broadcaster/actuators_status', self.actuators_callback, 10)
+        self.rc_subscription = self.create_subscription(Joy, '/tail_broadcaster/rc_status', self.rc_callback, 10)
+        self.imu_subscription = self.create_subscription(Imu, '/imu_sensor_broadcaster/imu', self.imu_callback, 10)
 
         self.barometer_msg = Pressure()
         self.battery_card_msg = BatteryState()
